@@ -171,8 +171,6 @@ void game_loop() {
     Vector2d sideToNextSide = Vector2d(0, 0);
     Vector2d step = Vector2d(0, 0);
     
-    bool lastWasOdd = false;
-    
     int red;
     int green;
     int blue;
@@ -311,6 +309,9 @@ void game_loop() {
             wallTop += yOffset;
             wallBottom += yOffset;
             
+            if (wallTop < 0) wallTop = 0;
+            if (wallBottom > SCREEN_HEIGHT) wallBottom = SCREEN_HEIGHT;
+            
             /*if (textureIndex == 33) {
                 // draws untextured wall
                 if (vertical_side) SDL_SetRenderDrawColor(renderer, red, green, blue, 255);
@@ -336,8 +337,8 @@ void game_loop() {
                     int d = y * 256 + (wallHeight - SCREEN_HEIGHT) * 128;
                     int textureY = ((d * textureHeight) / wallHeight) / 256;
                     Uint32 color = eridu223[textureHeight * textureY + textureX];
-                    if(!vertical_side) color = (color >> 1) & 8355711;
-                    SDL_SetRenderDrawColor(renderer, color & 0xff, (color >> 4), (color >> 4), 255);
+                    if(vertical_side) SDL_SetRenderDrawColor(renderer, (color & 0xff), (color >> 4), (color >> 4), 255);
+                    else SDL_SetRenderDrawColor(renderer, (color & 0xff) / 2, (color >> 4) / 2, (color >> 4) / 2, 255);
                     SDL_Rect rect;
                     rect.x = i;
                     rect.y = y + yOffset;
