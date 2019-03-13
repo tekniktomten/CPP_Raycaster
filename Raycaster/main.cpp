@@ -1,4 +1,3 @@
-//Using SDL, SDL_image, standard IO, math, and strings
 #include <SDL2/SDL.h>
 #include <SDL2_image/SDL_image.h>
 #include <stdio.h>
@@ -9,6 +8,7 @@
 #include <chrono>
 #include <vector>
 #include "Vector2d.hpp"
+#include "Bitmaps.cpp"
 
 #define mapWidth 24
 #define mapHeight 24
@@ -46,9 +46,11 @@ bool fullscreen = false;
 int textureWidth = 64;
 int textureHeight = 64;
 
+int textureGranularity = 2;
+
 //Screen dimension constants
-const int SCREEN_WIDTH = 800;
-const int SCREEN_HEIGHT = 600;
+const int SCREEN_WIDTH = 640;
+const int SCREEN_HEIGHT = 480;
 
 //Starts up SDL and creates window
 bool init();
@@ -132,6 +134,8 @@ void close() {
 
 int main( int argc, char* args[] ) {
     
+    //readBMP("daggerfall_tpack/eridu200.bmp");
+    
     //Start up SDL and create window
     if(init()) {
         game_loop();
@@ -149,36 +153,7 @@ void game_loop() {
     
     std::vector<Uint32> texture[8];
     for (int i = 0; i < 8; i++) texture[i].resize(textureWidth * textureHeight);
-    
-    //generate some textures
-    for(int x = 0; x < textureWidth; x++)
-        for(int y = 0; y < textureHeight; y++)
-        {
-            int xorcolor = (x * 256 / textureWidth) ^ (y * 256 / textureHeight);
-            //int xcolor = x * 256 / texWidth;
-            int ycolor = y * 256 / textureHeight;
-            int xycolor = y * 128 / textureHeight + x * 128 / textureWidth;
-            texture[0][textureWidth * y + x] = 65536 * 254 * (x != y && x != textureWidth - y); //flat red texture with black cross
-            texture[1][textureWidth * y + x] = xycolor + 256 * xycolor + 65536 * xycolor; //sloped greyscale
-            texture[2][textureWidth * y + x] = 256 * xycolor + 65536 * xycolor; //sloped yellow gradient
-            texture[3][textureWidth * y + x] = xorcolor + 256 * xorcolor + 65536 * xorcolor; //xor greyscale
-            texture[4][textureWidth * y + x] = 256 * xorcolor; //xor green
-            texture[5][textureWidth * y + x] = 65536 * 192 * (x % 16 && y % 16); //red bricks
-            texture[6][textureWidth * y + x] = 65536 * ycolor; //red gradient
-            texture[7][textureWidth * y + x] = 128 + 256 * 128 + 65536 * 128; //flat grey texture
-        }
-    
-    // generate wolfstein textures
-    /*unsigned long tw, th;
-     loadImage(texture[0], tw, th, "pics/eagle.png");
-     loadImage(texture[1], tw, th, "pics/redbrick.png");
-     loadImage(texture[2], tw, th, "pics/purplestone.png");
-     loadImage(texture[3], tw, th, "pics/greystone.png");
-     loadImage(texture[4], tw, th, "pics/bluestone.png");
-     loadImage(texture[5], tw, th, "pics/mossy.png");
-     loadImage(texture[6], tw, th, "pics/wood.png");
-     loadImage(texture[7], tw, th, "pics/colorstone.png");*/
-    
+
     bool trapMouse = true;
     SDL_SetRelativeMouseMode(SDL_bool(trapMouse));
     
@@ -195,6 +170,8 @@ void game_loop() {
     Vector2d rayDistance = Vector2d(0, 0);
     Vector2d sideToNextSide = Vector2d(0, 0);
     Vector2d step = Vector2d(0, 0);
+    
+    bool lastWasOdd = false;
     
     int red;
     int green;
@@ -334,33 +311,46 @@ void game_loop() {
             wallTop += yOffset;
             wallBottom += yOffset;
             
-            // draws ceiling
-            SDL_SetRenderDrawColor(renderer, 77, 77, 77, 255);
-            SDL_RenderDrawLine(renderer, i, 0, i, wallTop);
-            
-            if (textureIndex == 5) {
+            /*if (textureIndex == 33) {
                 // draws untextured wall
                 if (vertical_side) SDL_SetRenderDrawColor(renderer, red, green, blue, 255);
                 else SDL_SetRenderDrawColor(renderer, red / 2, green / 2, blue / 2, 255);
                 SDL_RenderDrawLine(renderer, i, wallTop, i, wallBottom);
-            } else {
-                for (int y = wallTop - yOffset; y < wallBottom - yOffset; y++) {
-                    int d = y * 256 - SCREEN_HEIGHT * 128 + (wallHeight) * 128;
+            } else {*/
+            if (i % textureGranularity == 0) {
+                // draws ceiling
+                SDL_SetRenderDrawColor(renderer, 77, 77, 77, 255);
+                SDL_RenderDrawLine(renderer, i, 0, i, wallTop);
+                SDL_RenderDrawLine(renderer, i + 1, 0, i + 1, wallTop);
+                //SDL_RenderDrawLine(renderer, i + 2, 0, i + 2, wallTop);
+                //SDL_RenderDrawLine(renderer, i + 3, 0, i + 3, wallTop);
+                
+                // draws floor
+                SDL_SetRenderDrawColor(renderer, 77, 77, 33, 255);
+                SDL_RenderDrawLine(renderer, i, wallBottom, i, SCREEN_HEIGHT);
+                SDL_RenderDrawLine(renderer, i + 1, wallBottom, i + 1, SCREEN_HEIGHT);
+                //SDL_RenderDrawLine(renderer, i + 2, wallBottom, i + 2, SCREEN_HEIGHT);
+                //SDL_RenderDrawLine(renderer, i + 3, wallBottom, i + 3, SCREEN_HEIGHT);
+                
+                for (int y = wallTop - yOffset; y < wallBottom - yOffset; y += textureGranularity) {
+                    int d = y * 256 + (wallHeight - SCREEN_HEIGHT) * 128;
                     int textureY = ((d * textureHeight) / wallHeight) / 256;
-                    Uint32 color = texture[textureIndex][textureHeight * textureY + textureX];
+                    Uint32 color = eridu223[textureHeight * textureY + textureX];
                     if(!vertical_side) color = (color >> 1) & 8355711;
-                    SDL_SetRenderDrawColor(renderer, color & 0xff, (color >> 8), (color >> 16), (color >> 24));
-                    SDL_RenderDrawPoint(renderer, i, y + yOffset);
+                    SDL_SetRenderDrawColor(renderer, color & 0xff, (color >> 4), (color >> 4), 255);
+                    SDL_Rect rect;
+                    rect.x = i;
+                    rect.y = y + yOffset;
+                    rect.w = textureGranularity;
+                    rect.h = textureGranularity;
+                    SDL_RenderFillRect(renderer, &rect);
                 }
             }
+            //}
             
             // draws wall
             //SDL_SetRenderDrawColor(renderer, red, green, blue, 255);
             //SDL_RenderDrawLine(renderer, i, wallTop, i, wallBottom);
-            
-            // draws floor
-            SDL_SetRenderDrawColor(renderer, 77, 77, 33, 255);
-            SDL_RenderDrawLine(renderer, i, wallBottom, i, SCREEN_HEIGHT);
             
         }
         
@@ -372,20 +362,19 @@ void game_loop() {
         update_screen();
         
         if (forward) {
-            Vector2d newPos = pos + dir.norm() * movementSpeed * frameTime;
-            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] == 0) pos = newPos;
-        }
+            Vector2d newPos = pos + dir.norm() * movementSpeed * frameTime * 3;
+            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] == 0) pos += dir.norm() * movementSpeed * frameTime;        }
         if (left) {
-            Vector2d newPos = pos + dir.rotate(-3.14159 / 2).norm() * movementSpeed * frameTime;
-            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] == 0) pos = newPos;
+            Vector2d newPos = pos + dir.rotate(-3.14159 / 2).norm() * movementSpeed * frameTime * 3;
+            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] == 0) pos += dir.rotate(-3.14159 / 2).norm() * movementSpeed * frameTime;
         }
         if (backward) {
-            Vector2d newPos = pos - dir.norm() * movementSpeed * frameTime;
-            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] == 0) pos = newPos;
+            Vector2d newPos = pos - dir.norm() * movementSpeed * frameTime * 3;
+            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] == 0) pos -= dir.norm() * movementSpeed * frameTime;
         }
         if (right) {
-            Vector2d newPos = pos + dir.rotate(3.14159 / 2).norm() * movementSpeed * frameTime;
-            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] == 0) pos = newPos;
+            Vector2d newPos = pos + dir.rotate(3.14159 / 2).norm() * movementSpeed * frameTime * 3;
+            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] == 0) pos += dir.rotate(3.14159 / 2).norm() * movementSpeed * frameTime;
         }
         
         //Handle events on queue
