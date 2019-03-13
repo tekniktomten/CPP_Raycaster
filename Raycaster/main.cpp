@@ -7,6 +7,7 @@
 #include <thread>
 #include <chrono>
 #include <vector>
+#include <bitset>
 #include "Vector2d.hpp"
 #include "Bitmaps.cpp"
 
@@ -266,40 +267,6 @@ void game_loop() {
             int textureX = (int) (wallX * (double) textureWidth); // x cordinate in texture domain
             if ((vertical_side && rayDir.getX() > 0) or (!vertical_side && rayDir.getY() < 0)) textureX = textureWidth - textureX - 1;
             
-            
-            switch (hit) {
-                case 1: {
-                    red = 0;
-                    green = 42;
-                    blue = 42;
-                    break;
-                }
-                case 2: {
-                    red = 42;
-                    green = 42;
-                    blue = 42;
-                    break;
-                }
-                case 3: {
-                    red = 200;
-                    green = 0;
-                    blue = 200;
-                    break;
-                }
-                case 4: {
-                    red = 200;
-                    green = 200;
-                    blue = 0;
-                    break;
-                }
-                default: {
-                    red = 100;
-                    green = 10;
-                    blue = 100;
-                    break;
-                }
-            }
-            
             if (!vertical_side) {
                 red = red / 2;
                 green = green / 2;
@@ -320,25 +287,50 @@ void game_loop() {
             } else {*/
             if (i % textureGranularity == 0) {
                 // draws ceiling
-                SDL_SetRenderDrawColor(renderer, 77, 77, 77, 255);
+                SDL_SetRenderDrawColor(renderer, 77, 77, 177, 255);
                 SDL_RenderDrawLine(renderer, i, 0, i, wallTop);
                 SDL_RenderDrawLine(renderer, i + 1, 0, i + 1, wallTop);
                 //SDL_RenderDrawLine(renderer, i + 2, 0, i + 2, wallTop);
                 //SDL_RenderDrawLine(renderer, i + 3, 0, i + 3, wallTop);
                 
                 // draws floor
-                SDL_SetRenderDrawColor(renderer, 77, 77, 33, 255);
+                SDL_SetRenderDrawColor(renderer, 30, 31, 10, 255);
                 SDL_RenderDrawLine(renderer, i, wallBottom, i, SCREEN_HEIGHT);
                 SDL_RenderDrawLine(renderer, i + 1, wallBottom, i + 1, SCREEN_HEIGHT);
                 //SDL_RenderDrawLine(renderer, i + 2, wallBottom, i + 2, SCREEN_HEIGHT);
                 //SDL_RenderDrawLine(renderer, i + 3, wallBottom, i + 3, SCREEN_HEIGHT);
                 
+                
                 for (int y = wallTop - yOffset; y < wallBottom - yOffset; y += textureGranularity) {
                     int d = y * 256 + (wallHeight - SCREEN_HEIGHT) * 128;
                     int textureY = ((d * textureHeight) / wallHeight) / 256;
-                    Uint32 color = eridu223[textureHeight * textureY + textureX];
-                    if(vertical_side) SDL_SetRenderDrawColor(renderer, (color & 0xff), (color >> 4), (color >> 4), 255);
-                    else SDL_SetRenderDrawColor(renderer, (color & 0xff) / 2, (color >> 4) / 2, (color >> 4) / 2, 255);
+                    Uint16 color;
+                    switch (hit) {
+                        case 1: {
+                            color = eridu223[textureHeight * textureY + textureX];
+                            break;
+                        }
+                        case 2: {
+                            color = eridu90[textureHeight * textureY + textureX];
+                            break;
+                        }
+                        case 3: {
+                            color = eridu341[textureHeight * textureY + textureX];
+                            break;
+                        }
+                        default: {
+                            color = eridu223[textureHeight * textureY + textureX];
+                            break;
+                        }
+                    }
+                    
+                    Uint8 c1 = (Uint8) (color >> 8);
+                    Uint8 c2 = (Uint8) (color >> 4) & 0x0f;
+                    Uint8 c3 = ((Uint8) (color) << 4);
+                    c3 = c3 >> 4;
+
+                    if(vertical_side) SDL_SetRenderDrawColor(renderer, c1 << 4, c2 << 4, c3 << 4, 255);
+                    else SDL_SetRenderDrawColor(renderer, c1 << 3, c2 << 3, c3 << 3, 255);
                     SDL_Rect rect;
                     rect.x = i;
                     rect.y = y + yOffset;
