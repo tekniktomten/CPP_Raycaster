@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		436CD0EF22390780003AD6C2 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 436CD0EE22390780003AD6C2 /* main.cpp */; };
 		436CD0F7223907A6003AD6C2 /* Vector2d.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 436CD0F5223907A6003AD6C2 /* Vector2d.cpp */; };
-		436CD0FB223907EA003AD6C2 /* SDL2_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 436CD0F9223907EA003AD6C2 /* SDL2_image.framework */; };
 		436CD0FC223907EA003AD6C2 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 436CD0FA223907EA003AD6C2 /* SDL2.framework */; };
 		436CD10122391B7F003AD6C2 /* Bitmaps.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 436CD10022391B7F003AD6C2 /* Bitmaps.cpp */; };
 /* End PBXBuildFile section */
@@ -41,7 +40,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				436CD0FB223907EA003AD6C2 /* SDL2_image.framework in Frameworks */,
 				436CD0FC223907EA003AD6C2 /* SDL2.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
