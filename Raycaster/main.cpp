@@ -8,50 +8,58 @@
 #include <chrono>
 #include <vector>
 #include <bitset>
+#include <stdlib.h>
 #include "Vector2d.hpp"
 #include "Bitmaps.cpp"
 
-#define mapWidth 24
-#define mapHeight 24
+#define mapWidth 32
+#define mapHeight 32
 
-int worldMap[mapWidth][mapHeight]=
-{
-    {4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,7,7,7,7,7,7,7,7},
-    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,7},
-    {4,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7},
-    {4,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7},
-    {4,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,7},
-    {4,0,4,0,0,0,0,5,5,5,5,5,5,5,5,5,7,7,0,7,7,7,7,7},
-    {4,0,5,0,0,0,0,5,0,5,0,5,0,5,0,5,7,0,0,0,7,7,7,1},
-    {4,0,6,0,0,0,0,5,0,0,0,0,0,0,0,5,7,0,0,0,0,0,0,8},
-    {4,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,7,7,1},
-    {4,0,8,0,0,0,0,5,0,0,0,0,0,0,0,5,7,0,0,0,0,0,0,8},
-    {4,0,0,0,0,0,0,5,0,0,0,0,0,0,0,5,7,0,0,0,7,7,7,1},
-    {4,0,0,0,0,0,0,5,5,5,5,0,5,5,5,5,7,7,7,7,7,7,7,1},
-    {6,6,6,6,6,6,6,6,6,6,6,0,6,6,6,6,6,6,6,6,6,6,6,6},
-    {8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
-    {6,6,6,6,6,6,0,6,6,6,6,0,6,6,6,6,6,6,6,6,6,6,6,6},
-    {4,4,4,4,4,4,0,4,4,4,6,0,6,2,2,2,2,2,2,2,3,3,3,3},
-    {4,0,0,0,0,0,0,0,0,4,6,0,6,2,0,0,0,0,0,2,0,0,0,2},
-    {4,0,0,0,0,0,0,0,0,0,0,0,6,2,0,0,5,0,0,2,0,0,0,2},
-    {4,0,0,0,0,0,0,0,0,4,6,0,6,2,0,0,0,0,0,2,2,0,2,2},
-    {4,0,6,0,6,0,0,0,0,4,6,0,0,0,0,0,5,0,0,0,0,0,0,2},
-    {4,0,0,5,0,0,0,0,0,4,6,0,6,2,0,0,0,0,0,2,2,0,2,2},
-    {4,0,6,0,6,0,0,0,0,4,6,0,6,2,0,0,5,0,0,2,0,0,0,2},
-    {4,0,0,0,0,0,0,0,0,4,6,0,6,2,0,0,0,0,0,2,0,0,0,2},
-    {4,4,4,4,4,4,4,4,4,4,1,1,1,2,2,2,2,2,2,3,3,3,3,3}
+int worldMap[mapWidth][mapHeight] = {
+    {4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,2,0,0,0,4},
+    {4,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,2,0,0,0,4},
+    {4,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,2,0,0,0,4},
+    {4,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,0,2,2,0,0,0,4},
+    {4,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4}
 };
 
-bool fullscreen = false;
+bool fullscreen = true;
 
 int textureWidth = 64;
-int textureHeight = 64;
+int textureHeight = 128;
 
 int textureGranularity = 2;
 
 //Screen dimension constants
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
+const int SCREEN_WIDTH = 800;
+const int SCREEN_HEIGHT = 600;
 
 //Starts up SDL and creates window
 bool init();
@@ -163,7 +171,7 @@ void game_loop() {
     double frameTime = 0;
     int fps = 0;
     
-    Vector2d pos = Vector2d(17.5, 19);
+    Vector2d pos = Vector2d(8, 12);
     Vector2d dir = Vector2d(0, -1);
     Vector2d cam = Vector2d(0.707, 0);
     Vector2d box = Vector2d(22, 12); // Should always contain integers
@@ -171,10 +179,7 @@ void game_loop() {
     Vector2d rayDistance = Vector2d(0, 0);
     Vector2d sideToNextSide = Vector2d(0, 0);
     Vector2d step = Vector2d(0, 0);
-    
-    int red;
-    int green;
-    int blue;
+    Vector2d lastPos = Vector2d(0, 0);
     
     double orthDistance;
     int hit = false;
@@ -184,16 +189,22 @@ void game_loop() {
     int wallBottom;
     
     double movementSpeed = 5;
+    double actualSpeed = movementSpeed;
     bool forward = false;
     bool backward = false;
     bool right = false;
     bool left = false;
+    bool sprint = false;
     
     int yOffset = 0;
     int maxYOffset = SCREEN_HEIGHT * 0.25;
     
     //Main loop flag
     bool quit = false;
+    
+    int noice[SCREEN_WIDTH];
+    bool updateNoice = false;
+    bool sandNoice = false; // turns it off and on
     
     //Event handler
     SDL_Event e;
@@ -202,6 +213,10 @@ void game_loop() {
     while( !quit ) {
         
         clear_screen();
+        
+        if (updateNoice && sandNoice) {
+            for (int i = 0; i < SCREEN_WIDTH; i++) noice[i] = rand() % (SCREEN_HEIGHT / 2);
+        }
         
         // raycast
         for (int i = 0; i < SCREEN_WIDTH; i++) {
@@ -251,13 +266,11 @@ void game_loop() {
                 orthDistance = (box.getY() - pos.getY() + (1.0 - step.getY()) / 2.0) / rayDir.getY();
             }
             
-            wallHeight = (int) (SCREEN_HEIGHT / orthDistance);
+            wallHeight = (int) (SCREEN_HEIGHT / orthDistance) * 2;
             wallTop = (SCREEN_HEIGHT - wallHeight) / 2.0;
             //if (wallTop < 0) wallTop = 0;
             wallBottom = (SCREEN_HEIGHT + wallHeight) / 2.0;
             //if (wallBottom > SCREEN_HEIGHT) wallBottom = SCREEN_HEIGHT;
-            
-            int textureIndex = hit - 1;
             
             double wallX; // where the wall was hit
             if (vertical_side) wallX = pos.getY() + rayDir.getY() * orthDistance;
@@ -266,12 +279,6 @@ void game_loop() {
             
             int textureX = (int) (wallX * (double) textureWidth); // x cordinate in texture domain
             if ((vertical_side && rayDir.getX() > 0) or (!vertical_side && rayDir.getY() < 0)) textureX = textureWidth - textureX - 1;
-            
-            if (!vertical_side) {
-                red = red / 2;
-                green = green / 2;
-                blue = blue / 2;
-            }
             
             wallTop += yOffset;
             wallBottom += yOffset;
@@ -287,19 +294,25 @@ void game_loop() {
             } else {*/
             if (i % textureGranularity == 0) {
                 // draws ceiling
-                SDL_SetRenderDrawColor(renderer, 77, 77, 177, 255);
+                SDL_SetRenderDrawColor(renderer, 40, 60, 70, 255);
                 SDL_RenderDrawLine(renderer, i, 0, i, wallTop);
                 SDL_RenderDrawLine(renderer, i + 1, 0, i + 1, wallTop);
                 //SDL_RenderDrawLine(renderer, i + 2, 0, i + 2, wallTop);
                 //SDL_RenderDrawLine(renderer, i + 3, 0, i + 3, wallTop);
                 
                 // draws floor
-                SDL_SetRenderDrawColor(renderer, 30, 31, 10, 255);
+                SDL_SetRenderDrawColor(renderer, 76, 70, 50, 255);
                 SDL_RenderDrawLine(renderer, i, wallBottom, i, SCREEN_HEIGHT);
                 SDL_RenderDrawLine(renderer, i + 1, wallBottom, i + 1, SCREEN_HEIGHT);
                 //SDL_RenderDrawLine(renderer, i + 2, wallBottom, i + 2, SCREEN_HEIGHT);
                 //SDL_RenderDrawLine(renderer, i + 3, wallBottom, i + 3, SCREEN_HEIGHT);
                 
+                if (sandNoice) {
+                    SDL_SetRenderDrawColor(renderer, 55, 45, 40, 255);
+                    SDL_RenderDrawPoint(renderer, i, noice[i] + wallBottom);
+                    SDL_SetRenderDrawColor(renderer, 60, 55, 40, 255);
+                    SDL_RenderDrawPoint(renderer, i, noice[i] * 2 + wallBottom);
+                }
                 
                 for (int y = wallTop - yOffset; y < wallBottom - yOffset; y += textureGranularity) {
                     int d = y * 256 + (wallHeight - SCREEN_HEIGHT) * 128;
@@ -307,19 +320,19 @@ void game_loop() {
                     Uint16 color;
                     switch (hit) {
                         case 1: {
-                            color = eridu223[textureHeight * textureY + textureX];
+                            color = t2[textureHeight * textureY + textureX];
                             break;
                         }
                         case 2: {
-                            color = eridu90[textureHeight * textureY + textureX];
+                            color = t1[textureHeight * textureY + textureX];
                             break;
                         }
                         case 3: {
-                            color = eridu341[textureHeight * textureY + textureX];
+                            color = t3[textureHeight * textureY + textureX];
                             break;
                         }
                         default: {
-                            color = eridu223[textureHeight * textureY + textureX];
+                            color = t0[textureHeight * textureY + textureX];
                             break;
                         }
                     }
@@ -329,7 +342,7 @@ void game_loop() {
                     Uint8 c3 = ((Uint8) (color) << 4);
                     c3 = c3 >> 4;
 
-                    if(vertical_side) SDL_SetRenderDrawColor(renderer, c1 << 4, c2 << 4, c3 << 4, 255);
+                    if(!vertical_side) SDL_SetRenderDrawColor(renderer, c1 << 4, c2 << 4, c3 << 4, 255);
                     else SDL_SetRenderDrawColor(renderer, c1 << 3, c2 << 3, c3 << 3, 255);
                     SDL_Rect rect;
                     rect.x = i;
@@ -353,22 +366,28 @@ void game_loop() {
         fps = (int) (1.0 / frameTime);
         std::cout << "FPS: " << fps << std::endl;
         update_screen();
-        
+        lastPos = pos.copy();
+        if (sprint) actualSpeed = movementSpeed * 2;
+        else actualSpeed = movementSpeed;
         if (forward) {
-            Vector2d newPos = pos + dir.norm() * movementSpeed * frameTime * 3;
-            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] == 0) pos += dir.norm() * movementSpeed * frameTime;        }
+            Vector2d newPos = pos + dir.norm() * actualSpeed * frameTime * 3;
+            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] == 0) pos += dir.norm() * actualSpeed * frameTime;        }
         if (left) {
-            Vector2d newPos = pos + dir.rotate(-3.14159 / 2).norm() * movementSpeed * frameTime * 3;
-            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] == 0) pos += dir.rotate(-3.14159 / 2).norm() * movementSpeed * frameTime;
+            Vector2d newPos = pos + dir.rotate(-3.14159 / 2).norm() * actualSpeed * frameTime * 3;
+            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] == 0) pos += dir.rotate(-3.14159 / 2).norm() * actualSpeed * frameTime;
         }
         if (backward) {
-            Vector2d newPos = pos - dir.norm() * movementSpeed * frameTime * 3;
-            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] == 0) pos -= dir.norm() * movementSpeed * frameTime;
+            Vector2d newPos = pos - dir.norm() * actualSpeed * frameTime * 3;
+            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] == 0) pos -= dir.norm() * actualSpeed * frameTime;
         }
         if (right) {
-            Vector2d newPos = pos + dir.rotate(3.14159 / 2).norm() * movementSpeed * frameTime * 3;
-            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] == 0) pos += dir.rotate(3.14159 / 2).norm() * movementSpeed * frameTime;
+            Vector2d newPos = pos + dir.rotate(3.14159 / 2).norm() * actualSpeed * frameTime * 3;
+            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] == 0) pos += dir.rotate(3.14159 / 2).norm() * actualSpeed * frameTime;
         }
+        
+        updateNoice = false;
+        
+        if (lastPos.getX() != pos.getX() || lastPos.getY() != pos.getY()) updateNoice = true;
         
         //Handle events on queue
         while( SDL_PollEvent( &e ) != 0 ) {
@@ -395,6 +414,10 @@ void game_loop() {
                     }
                     case SDLK_d: {
                         right = true;
+                        break;
+                    }
+                    case SDLK_LSHIFT: {
+                        sprint = true;
                         break;
                     }
                     case SDLK_ESCAPE: {
@@ -427,6 +450,10 @@ void game_loop() {
                         right = false;
                         break;
                     }
+                    case SDLK_LSHIFT: {
+                        sprint = false;
+                        break;
+                    }
                     default: {
                         break;
                     }
@@ -434,11 +461,12 @@ void game_loop() {
             }
             
             else if( e.type == SDL_MOUSEMOTION) {
+                updateNoice = true;
                 int x, y;
                 SDL_GetMouseState( &x, &y );
                 dir.rotateThis(e.motion.xrel / 2000.0);
                 cam.rotateThis(e.motion.xrel / 2000.0);
-                yOffset -= e.motion.yrel;
+                yOffset -= e.motion.yrel / 2;
                 if (yOffset > maxYOffset) yOffset = maxYOffset;
                 else if (yOffset < -maxYOffset) yOffset = -maxYOffset;
             }
