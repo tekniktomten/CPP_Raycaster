@@ -13,38 +13,95 @@
 #include "Bitmaps.cpp"
 
 #define mapWidth 32
-#define mapHeight 32
+#define mapHeight 96
 
-int worldMap[mapWidth][mapHeight] = {
+int worldMap[mapHeight][mapWidth] = {
     {4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4},
     {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
     {4,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,2,0,0,0,4},
-    {4,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,2,0,0,0,4},
-    {4,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,2,0,0,0,4},
-    {4,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,0,2,2,0,0,0,4},
+    {4,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,-2,-2,-2,2,0,0,0,4},
+    {4,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,-2,-2,-2,2,0,0,0,4},
+    {4,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,-2,2,2,0,0,0,4},
     {4,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
     {4,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
     {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
     {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
     {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
-    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
-    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
-    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
-    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
-    {4,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,-1,-1,-1,-1,-1,-1,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,-1,-1,-1,-1,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,3,0,0,0,0,0,0,0,0,0,-1,-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
     {4,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
     {4,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
     {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,1,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,1,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
     {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
     {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
     {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,2,0,0,0,4},
+    {4,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,-2,-2,-2,2,0,0,0,4},
+    {4,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,-2,-2,-2,2,0,0,0,4},
+    {4,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,-2,2,2,0,0,0,4},
+    {4,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,4,4,4,4,4,4,4,4,4,4,4,4,4,0,0,0,4,4,4,4,4,4,4,4,4,4,4,4,4,4},
+    {4,4,4,4,4,4,4,4,4,4,4,4,4,4,0,0,0,4,4,4,4,4,4,4,4,4,4,4,4,4,4},
+    {4,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
     {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
     {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
     {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,-1,-1,-1,-1,-1,-1,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,-1,-1,-1,-1,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,3,0,0,0,0,0,0,0,0,0,-1,-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,1,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,1,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,4,4,4,4,4,4,4,4,4,4,4,4,4,0,0,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4},
+    {4,4,4,4,4,4,4,4,4,4,4,4,4,4,0,0,0,4,4,4,4,4,4,4,4,4,4,4,4,4,4},
+    {4,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
     {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
     {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
     {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,-1,-1,-1,-1,-1,-1,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,-1,-1,-1,-1,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,3,0,0,0,0,0,0,0,0,0,-1,-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
     {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,1,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,1,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+    {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
     {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
     {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
     {4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4}
@@ -266,6 +323,9 @@ void raycast() {
         wallTop += yOffset;
         wallBottom += yOffset;
         
+        int actualWallTop = wallTop;
+        int actualWallBottom = wallBottom;
+        
         if (wallTop < 0) wallTop = 0;
         if (wallBottom > SCREEN_HEIGHT) wallBottom = SCREEN_HEIGHT;
         
@@ -284,8 +344,8 @@ void raycast() {
             SDL_RenderDrawLine(renderer, i, 0, i, wallTop);
             
             // draws floor
-            //SDL_SetRenderDrawColor(renderer, 76, 70, 50, 255);
-            //SDL_RenderDrawLine(renderer, i, wallBottom, i, SCREEN_HEIGHT);
+            SDL_SetRenderDrawColor(renderer, 76, 70, 50, 255);
+            SDL_RenderDrawLine(renderer, i, wallBottom, i, SCREEN_HEIGHT);
             
             if (sandNoice) {
                 SDL_SetRenderDrawColor(renderer, 55, 45, 40, 255);
@@ -341,9 +401,9 @@ void raycast() {
                 //SDL_RenderDrawLine(renderer, i + 3, 0, i + 3, wallTop);
                 
                 // draws floor
-                //SDL_SetRenderDrawColor(renderer, 76, 70, 50, 255);
-                //SDL_RenderDrawLine(renderer, i, wallBottom, i, SCREEN_HEIGHT);
-                //SDL_RenderDrawLine(renderer, i + 1, wallBottom, i + 1, SCREEN_HEIGHT);
+                SDL_SetRenderDrawColor(renderer, 76, 70, 50, 255);
+                SDL_RenderDrawLine(renderer, i, wallBottom, i, SCREEN_HEIGHT);
+                SDL_RenderDrawLine(renderer, i + 1, wallBottom, i + 1, SCREEN_HEIGHT);
                 
                 if (sandNoice) {
                     SDL_SetRenderDrawColor(renderer, 55, 45, 40, 255);
@@ -403,11 +463,11 @@ void raycast() {
                 SDL_RenderDrawLine(renderer, i + 3, 0, i + 3, wallTop);
                 
                 // draws floor
-                //SDL_SetRenderDrawColor(renderer, 76, 70, 50, 255);
-                //SDL_RenderDrawLine(renderer, i, wallBottom, i, SCREEN_HEIGHT);
-                //SDL_RenderDrawLine(renderer, i + 1, wallBottom, i + 1, SCREEN_HEIGHT);
-                //SDL_RenderDrawLine(renderer, i + 2, wallBottom, i + 2, SCREEN_HEIGHT);
-                //SDL_RenderDrawLine(renderer, i + 3, wallBottom, i + 3, SCREEN_HEIGHT);
+                SDL_SetRenderDrawColor(renderer, 76, 70, 50, 255);
+                SDL_RenderDrawLine(renderer, i, wallBottom, i, SCREEN_HEIGHT);
+                SDL_RenderDrawLine(renderer, i + 1, wallBottom, i + 1, SCREEN_HEIGHT);
+                SDL_RenderDrawLine(renderer, i + 2, wallBottom, i + 2, SCREEN_HEIGHT);
+                SDL_RenderDrawLine(renderer, i + 3, wallBottom, i + 3, SCREEN_HEIGHT);
                 
                 if (sandNoice) {
                     SDL_SetRenderDrawColor(renderer, 55, 45, 40, 255);
@@ -455,36 +515,49 @@ void raycast() {
                 }
             }
         }
-        // floor
+        
+        bool floor_and_ceiling = true;
+        
+        if (floor_and_ceiling) {
+            
         if (vertical_side && rayDir.getX() > 0) floorWall = Vector2d(box.getX(), box.getY() + wallX);
         else if (vertical_side && rayDir.getX() < 0) floorWall = Vector2d(box.getX() + 1.0, box.getY() + wallX);
         else if (!vertical_side && rayDir.getY() > 0) floorWall = Vector2d(box.getX() + wallX, box.getY());
         else floorWall = Vector2d(box.getX() + wallX, box.getY() + 1.0);
        
         double currentDistance;
-
         
-        for (int y = wallBottom - yOffset - 2; y < SCREEN_HEIGHT - yOffset; y+=textureGranularity) {
-            currentDistance = SCREEN_HEIGHT / (2.0 * y - SCREEN_HEIGHT);
-            if (currentDistance > 2.8) textureGranularity = 1;
-            else textureGranularity = 2;
-            if (i % textureGranularity == 0) {
+            for (int y = actualWallBottom - yOffset; y < SCREEN_HEIGHT + yOffset; y+=2) {
+                currentDistance = SCREEN_HEIGHT / (2.0 * y - SCREEN_HEIGHT);
                 double weight = (currentDistance * wallH) / (orthDistance);
                 Vector2d currentFloor = Vector2d(weight * floorWall.getX() + (1.0 - weight) * pos.getX(), weight * floorWall.getY() + (1.0 - weight) * pos.getY());
-                Vector2d floorTexture = Vector2d((int) (currentFloor.getX() * textureWidth / 2) % textureWidth, (int) (currentFloor.getY() * textureHeight / 4) % textureHeight);
-                Uint16 color_ceiling = t0[int(textureWidth * floorTexture.getY() + floorTexture.getX())];
-                Uint8 c1_c = (Uint8) (color_ceiling >> 8);
-                Uint8 c2_c = (Uint8) (color_ceiling >> 4) & 0x0f;
-                Uint8 c3_c = ((Uint8) (color_ceiling) << 4);
-                c3_c = c3_c >> 4;
-                SDL_SetRenderDrawColor(renderer, c1_c << 4, c2_c << 4, c3_c << 4, 255);
-                SDL_Rect rect;
-                rect.x = i;
-                rect.y = y + yOffset;
-                rect.w = textureGranularity;
-                rect.h = textureGranularity;
-                SDL_RenderFillRect(renderer, &rect);
+                if (worldMap[(int) currentFloor.getY()][(int) currentFloor.getX()] < -1) {
+                    Vector2d floorTexture = Vector2d((int) (currentFloor.getX() * textureWidth / 2) % textureWidth, (int) (currentFloor.getY() * textureHeight / 4) % textureHeight);
+                    Uint16 color_ceiling = t3[int(textureWidth * floorTexture.getY() + floorTexture.getX())];
+                    Uint8 c1_c = (Uint8) (color_ceiling >> 8);
+                    Uint8 c2_c = (Uint8) (color_ceiling >> 4) & 0x0f;
+                    Uint8 c3_c = ((Uint8) (color_ceiling) << 4);
+                    c3_c = c3_c >> 4;
+                    SDL_SetRenderDrawColor(renderer, c1_c << 4, c2_c << 4, c3_c << 4, 255);
+                    SDL_RenderDrawLine(renderer, i, SCREEN_HEIGHT - y + yOffset, i, SCREEN_HEIGHT - y + yOffset + 2);
+                }
             }
+            for (int y = wallBottom - yOffset; y < SCREEN_HEIGHT - yOffset; y+=2) {
+                currentDistance = SCREEN_HEIGHT / (2.0 * y - SCREEN_HEIGHT);
+                double weight = (currentDistance * wallH) / (orthDistance);
+                Vector2d currentFloor = Vector2d(weight * floorWall.getX() + (1.0 - weight) * pos.getX(), weight * floorWall.getY() + (1.0 - weight) * pos.getY());
+                if (worldMap[(int) currentFloor.getY()][(int) currentFloor.getX()] < 0) {
+                    Vector2d floorTexture = Vector2d((int) (currentFloor.getX() * textureWidth / 2) % textureWidth, (int) (currentFloor.getY() * textureHeight / 4) % textureHeight);
+                    Uint16 color_ceiling = t3[int(textureWidth * floorTexture.getY() + floorTexture.getX())];
+                    Uint8 c1_c = (Uint8) (color_ceiling >> 8);
+                    Uint8 c2_c = (Uint8) (color_ceiling >> 4) & 0x0f;
+                    Uint8 c3_c = ((Uint8) (color_ceiling) << 4);
+                    c3_c = c3_c >> 4;
+                    SDL_SetRenderDrawColor(renderer, c1_c << 3, c2_c << 3, c3_c << 3, 255);
+                    SDL_RenderDrawLine(renderer, i, y + yOffset, i, y + yOffset + 2);
+                }
+            }
+            
         }
     }
 }
@@ -522,18 +595,18 @@ void game_loop() {
         else actualSpeed = movementSpeed;
         if (forward) {
             Vector2d newPos = pos + dir.norm() * actualSpeed * frameTime * 3;
-            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] == 0) pos += dir.norm() * actualSpeed * frameTime;        }
+            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] <= 0) pos += dir.norm() * actualSpeed * frameTime;        }
         if (left) {
             Vector2d newPos = pos + dir.rotate(-3.14159 / 2).norm() * actualSpeed * frameTime * 3;
-            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] == 0) pos += dir.rotate(-3.14159 / 2).norm() * actualSpeed * frameTime;
+            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] <= 0) pos += dir.rotate(-3.14159 / 2).norm() * actualSpeed * frameTime;
         }
         if (backward) {
             Vector2d newPos = pos - dir.norm() * actualSpeed * frameTime * 3;
-            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] == 0) pos -= dir.norm() * actualSpeed * frameTime;
+            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] <= 0) pos -= dir.norm() * actualSpeed * frameTime;
         }
         if (right) {
             Vector2d newPos = pos + dir.rotate(3.14159 / 2).norm() * actualSpeed * frameTime * 3;
-            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] == 0) pos += dir.rotate(3.14159 / 2).norm() * actualSpeed * frameTime;
+            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] <= 0) pos += dir.rotate(3.14159 / 2).norm() * actualSpeed * frameTime;
         }
         
         updateNoice = false;
