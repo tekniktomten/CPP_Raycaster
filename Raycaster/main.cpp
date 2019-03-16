@@ -117,8 +117,8 @@ int textureHeight = 64 * wallH;
 int textureGranularity = 2;
 
 //Screen dimension constants
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
+const int SCREEN_WIDTH = 800;
+const int SCREEN_HEIGHT = 600;
 
 //Starts up SDL and creates window
 bool init();
@@ -144,7 +144,11 @@ SDL_Window* window = NULL;
 //The window renderer
 SDL_Renderer* renderer = NULL;
 
-std::vector<Uint32> texture[8];
+SDL_Texture* texture = NULL;
+
+Uint32* pixels = NULL;
+
+int pitch = NULL;
 
 bool trapMouse = true;
 
@@ -228,13 +232,22 @@ bool init() {
             }
         }
     }
+    
+    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT);
+    pixels = new Uint32[SCREEN_WIDTH * SCREEN_HEIGHT];
+    memset(pixels, 0, SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(Uint32));
+    pitch = SCREEN_WIDTH * sizeof(Uint32);
+    
     if (!success) printf( "Failed to initialize!\n" );
     return success;
 }
 
 void close() {
+    delete[] pixels;
+    // texture??
+    
     //Destroy window
-    SDL_DestroyRenderer( renderer );
+    //SDL_DestroyRenderer( renderer ); // TODO leak?
     SDL_DestroyWindow( window );
     window = NULL;
     renderer = NULL;
@@ -336,16 +349,16 @@ void raycast() {
          SDL_RenderDrawLine(renderer, i, wallTop, i, wallBottom);
          } else {*/
         
-        if (orthDistance > 8) {
+        if (true) {
             x_shift1 = (i + 1) % 2;
             x_shift2 = (i + 1) % 4;
             
-            SDL_SetRenderDrawColor(renderer, 40, 60, 70, 255);
-            SDL_RenderDrawLine(renderer, i, 0, i, wallTop);
+            //SDL_SetRenderDrawColor(renderer, 40, 60, 70, 255);
+            //SDL_RenderDrawLine(renderer, i, 0, i, wallTop);
             
             // draws floor
-            SDL_SetRenderDrawColor(renderer, 76, 70, 50, 255);
-            SDL_RenderDrawLine(renderer, i, wallBottom, i, SCREEN_HEIGHT);
+            //SDL_SetRenderDrawColor(renderer, 76, 70, 50, 255);
+            //SDL_RenderDrawLine(renderer, i, wallBottom, i, SCREEN_HEIGHT);
             
             if (sandNoice) {
                 SDL_SetRenderDrawColor(renderer, 55, 45, 40, 255);
@@ -382,9 +395,19 @@ void raycast() {
                 Uint8 c3 = ((Uint8) (color) << 4);
                 c3 = c3 >> 4;
                 
-                if(!vertical_side) SDL_SetRenderDrawColor(renderer, c1 << 4, c2 << 4, c3 << 4, 255);
-                else SDL_SetRenderDrawColor(renderer, c1 << 3, c2 << 3, c3 << 3, 255);
-                SDL_RenderDrawPoint(renderer, i, y + yOffset);
+                if (!vertical_side) {
+                    c1 = c1 << 4;
+                    c2 = c2 << 4;
+                    c3 = c3 << 4;
+                } else {
+                    c1 = c1 << 3;
+                    c2 = c2 << 3;
+                    c3 = c3 << 3;
+                }
+                
+                //SDL_SetRenderDrawColor(renderer, c1, c2, c3, 255);
+                //SDL_RenderDrawPoint(renderer, i, y + yOffset);
+                pixels[(y + yOffset) * SCREEN_WIDTH + i] = (((Uint32) 255) + (((Uint32) c3) << 8) + (((Uint32) c2) << 16) + (((Uint32) c1) << 24));
             }
         }
         else if (orthDistance > 2) {
@@ -394,16 +417,16 @@ void raycast() {
                 x_shift2 = (i + 2) % 4;
                 
                 // draws ceiling
-                SDL_SetRenderDrawColor(renderer, 40, 60, 70, 255);
-                SDL_RenderDrawLine(renderer, i, 0, i, wallTop);
-                SDL_RenderDrawLine(renderer, i + 1, 0, i + 1, wallTop);
+                //SDL_SetRenderDrawColor(renderer, 40, 60, 70, 255);
+                //SDL_RenderDrawLine(renderer, i, 0, i, wallTop);
+                //SDL_RenderDrawLine(renderer, i + 1, 0, i + 1, wallTop);
                 //SDL_RenderDrawLine(renderer, i + 2, 0, i + 2, wallTop);
                 //SDL_RenderDrawLine(renderer, i + 3, 0, i + 3, wallTop);
                 
                 // draws floor
-                SDL_SetRenderDrawColor(renderer, 76, 70, 50, 255);
-                SDL_RenderDrawLine(renderer, i, wallBottom, i, SCREEN_HEIGHT);
-                SDL_RenderDrawLine(renderer, i + 1, wallBottom, i + 1, SCREEN_HEIGHT);
+                //SDL_SetRenderDrawColor(renderer, 76, 70, 50, 255);
+                //SDL_RenderDrawLine(renderer, i, wallBottom, i, SCREEN_HEIGHT);
+                //SDL_RenderDrawLine(renderer, i + 1, wallBottom, i + 1, SCREEN_HEIGHT);
                 
                 if (sandNoice) {
                     SDL_SetRenderDrawColor(renderer, 55, 45, 40, 255);
@@ -447,7 +470,7 @@ void raycast() {
                     rect.y = y + yOffset;
                     rect.w = textureGranularity;
                     rect.h = textureGranularity;
-                    SDL_RenderFillRect(renderer, &rect);
+                    //SDL_RenderFillRect(renderer, &rect);
                 }
             }
         }
@@ -456,18 +479,18 @@ void raycast() {
             if ((i - x_shift2) % textureGranularity == 0) {
                 
                 // draws ceiling
-                SDL_SetRenderDrawColor(renderer, 40, 60, 70, 255);
-                SDL_RenderDrawLine(renderer, i, 0, i, wallTop);
-                SDL_RenderDrawLine(renderer, i + 1, 0, i + 1, wallTop);
-                SDL_RenderDrawLine(renderer, i + 2, 0, i + 2, wallTop);
-                SDL_RenderDrawLine(renderer, i + 3, 0, i + 3, wallTop);
+                //SDL_SetRenderDrawColor(renderer, 40, 60, 70, 255);
+                //SDL_RenderDrawLine(renderer, i, 0, i, wallTop);
+                //SDL_RenderDrawLine(renderer, i + 1, 0, i + 1, wallTop);
+                //SDL_RenderDrawLine(renderer, i + 2, 0, i + 2, wallTop);
+                //SDL_RenderDrawLine(renderer, i + 3, 0, i + 3, wallTop);
                 
                 // draws floor
-                SDL_SetRenderDrawColor(renderer, 76, 70, 50, 255);
-                SDL_RenderDrawLine(renderer, i, wallBottom, i, SCREEN_HEIGHT);
-                SDL_RenderDrawLine(renderer, i + 1, wallBottom, i + 1, SCREEN_HEIGHT);
-                SDL_RenderDrawLine(renderer, i + 2, wallBottom, i + 2, SCREEN_HEIGHT);
-                SDL_RenderDrawLine(renderer, i + 3, wallBottom, i + 3, SCREEN_HEIGHT);
+                //SDL_SetRenderDrawColor(renderer, 76, 70, 50, 255);
+                //SDL_RenderDrawLine(renderer, i, wallBottom, i, SCREEN_HEIGHT);
+                //SDL_RenderDrawLine(renderer, i + 1, wallBottom, i + 1, SCREEN_HEIGHT);
+                //SDL_RenderDrawLine(renderer, i + 2, wallBottom, i + 2, SCREEN_HEIGHT);
+                //SDL_RenderDrawLine(renderer, i + 3, wallBottom, i + 3, SCREEN_HEIGHT);
                 
                 if (sandNoice) {
                     SDL_SetRenderDrawColor(renderer, 55, 45, 40, 255);
@@ -511,52 +534,72 @@ void raycast() {
                     rect.y = y + yOffset;
                     rect.w = textureGranularity;
                     rect.h = textureGranularity;
-                    SDL_RenderFillRect(renderer, &rect);
+                    //SDL_RenderFillRect(renderer, &rect);
                 }
             }
         }
         
         bool floor_and_ceiling = true;
         
-        if (floor_and_ceiling) {
+        if (true) {
             
-        if (vertical_side && rayDir.getX() > 0) floorWall = Vector2d(box.getX(), box.getY() + wallX);
-        else if (vertical_side && rayDir.getX() < 0) floorWall = Vector2d(box.getX() + 1.0, box.getY() + wallX);
-        else if (!vertical_side && rayDir.getY() > 0) floorWall = Vector2d(box.getX() + wallX, box.getY());
-        else floorWall = Vector2d(box.getX() + wallX, box.getY() + 1.0);
-       
-        double currentDistance;
-        
-            for (int y = actualWallBottom - yOffset; y < SCREEN_HEIGHT + yOffset; y+=2) {
-                currentDistance = SCREEN_HEIGHT / (2.0 * y - SCREEN_HEIGHT);
-                double weight = (currentDistance * wallH) / (orthDistance);
-                Vector2d currentFloor = Vector2d(weight * floorWall.getX() + (1.0 - weight) * pos.getX(), weight * floorWall.getY() + (1.0 - weight) * pos.getY());
-                if (worldMap[(int) currentFloor.getY()][(int) currentFloor.getX()] < -1) {
-                    Vector2d floorTexture = Vector2d((int) (currentFloor.getX() * textureWidth / 2) % textureWidth, (int) (currentFloor.getY() * textureHeight / 4) % textureHeight);
-                    Uint16 color_ceiling = t3[int(textureWidth * floorTexture.getY() + floorTexture.getX())];
-                    Uint8 c1_c = (Uint8) (color_ceiling >> 8);
-                    Uint8 c2_c = (Uint8) (color_ceiling >> 4) & 0x0f;
-                    Uint8 c3_c = ((Uint8) (color_ceiling) << 4);
-                    c3_c = c3_c >> 4;
-                    SDL_SetRenderDrawColor(renderer, c1_c << 4, c2_c << 4, c3_c << 4, 255);
-                    SDL_RenderDrawLine(renderer, i, SCREEN_HEIGHT - y + yOffset, i, SCREEN_HEIGHT - y + yOffset + 2);
-                }
+            if (vertical_side && rayDir.getX() > 0) floorWall = Vector2d(box.getX(), box.getY() + wallX);
+            else if (vertical_side && rayDir.getX() < 0) floorWall = Vector2d(box.getX() + 1.0, box.getY() + wallX);
+            else if (!vertical_side && rayDir.getY() > 0) floorWall = Vector2d(box.getX() + wallX, box.getY());
+            else floorWall = Vector2d(box.getX() + wallX, box.getY() + 1.0);
+            
+            double currentDistance;
+            
+            /*for (int y = actualWallBottom - yOffset; y < SCREEN_HEIGHT + yOffset; y++) {
+             currentDistance = SCREEN_HEIGHT / (2.0 * y - SCREEN_HEIGHT);
+             double weight = (currentDistance * wallH) / (orthDistance);
+             Vector2d currentFloor = Vector2d(weight * floorWall.getX() + (1.0 - weight) * pos.getX(), weight * floorWall.getY() + (1.0 - weight) * pos.getY());
+             if (worldMap[(int) currentFloor.getY()][(int) currentFloor.getX()] < 1) {
+             Vector2d floorTexture = Vector2d((int) (currentFloor.getX() * textureWidth / 2) % textureWidth, (int) (currentFloor.getY() * textureHeight / 4) % textureHeight);
+             Uint16 color_ceiling = t0[int(textureWidth * floorTexture.getY() + floorTexture.getX())];
+             Uint8 c1_c = (Uint8) (color_ceiling >> 8);
+             Uint8 c2_c = (Uint8) (color_ceiling >> 4) & 0x0f;
+             Uint8 c3_c = ((Uint8) (color_ceiling) << 4);
+             c3_c = c3_c >> 4;
+             c1_c = c1_c << 4;
+             c2_c = c2_c << 4;
+             c3_c = c3_c << 4;
+             pixels[(SCREEN_HEIGHT - y + yOffset) * SCREEN_WIDTH + i] = (((Uint32) 255) + (((Uint32) c3_c) << 8) + (((Uint32) c2_c) << 16) + (((Uint32) c1_c) << 24));                    //SDL_SetRenderDrawColor(renderer, c1_c << 4, c2_c
+             }
+             }*/
+            for (int y = actualWallBottom - yOffset; y < SCREEN_HEIGHT + yOffset; y++) {
+                Uint8 c1_c = 20;
+                Uint8 c2_c = 40;
+                Uint8 c3_c = 200;
+                pixels[(SCREEN_HEIGHT - y + yOffset) * SCREEN_WIDTH + i] = (((Uint32) 255) + (((Uint32) c3_c) << 8) + (((Uint32) c2_c) << 16) + (((Uint32) c1_c) << 24));
             }
-            for (int y = wallBottom - yOffset; y < SCREEN_HEIGHT - yOffset; y+=2) {
-                currentDistance = SCREEN_HEIGHT / (2.0 * y - SCREEN_HEIGHT);
-                double weight = (currentDistance * wallH) / (orthDistance);
-                Vector2d currentFloor = Vector2d(weight * floorWall.getX() + (1.0 - weight) * pos.getX(), weight * floorWall.getY() + (1.0 - weight) * pos.getY());
-                if (worldMap[(int) currentFloor.getY()][(int) currentFloor.getX()] < 0) {
-                    Vector2d floorTexture = Vector2d((int) (currentFloor.getX() * textureWidth / 2) % textureWidth, (int) (currentFloor.getY() * textureHeight / 4) % textureHeight);
-                    Uint16 color_ceiling = t3[int(textureWidth * floorTexture.getY() + floorTexture.getX())];
-                    Uint8 c1_c = (Uint8) (color_ceiling >> 8);
-                    Uint8 c2_c = (Uint8) (color_ceiling >> 4) & 0x0f;
-                    Uint8 c3_c = ((Uint8) (color_ceiling) << 4);
-                    c3_c = c3_c >> 4;
-                    SDL_SetRenderDrawColor(renderer, c1_c << 3, c2_c << 3, c3_c << 3, 255);
-                    SDL_RenderDrawLine(renderer, i, y + yOffset, i, y + yOffset + 2);
-                }
+            
+            for (int y = wallBottom - yOffset; y < SCREEN_HEIGHT - yOffset; y++) {
+                Uint8 c1_c = 70;
+                Uint8 c2_c = 140;
+                Uint8 c3_c = 200;
+                pixels[(y + yOffset) * SCREEN_WIDTH + i] = (((Uint32) 255) + (((Uint32) c3_c) << 8) + (((Uint32) c2_c) << 16) + (((Uint32) c1_c) << 24));
             }
+            
+            /*for (int y = wallBottom - yOffset; y < SCREEN_HEIGHT - yOffset; y++) {
+             currentDistance = SCREEN_HEIGHT / (2.0 * y - SCREEN_HEIGHT);
+             double weight = (currentDistance * wallH) / (orthDistance);
+             Vector2d currentFloor = Vector2d(weight * floorWall.getX() + (1.0 - weight) * pos.getX(), weight * floorWall.getY() + (1.0 - weight) * pos.getY());
+             if (worldMap[(int) currentFloor.getY()][(int) currentFloor.getX()] < 1) {
+             Vector2d floorTexture = Vector2d((int) (currentFloor.getX() * textureWidth / 2) % textureWidth, (int) (currentFloor.getY() * textureHeight / 4) % textureHeight);
+             Uint16 color_ceiling = t3[int(textureWidth * floorTexture.getY() + floorTexture.getX())];
+             Uint8 c1_c = (Uint8) (color_ceiling >> 8);
+             Uint8 c2_c = (Uint8) (color_ceiling >> 4) & 0x0f;
+             Uint8 c3_c = ((Uint8) (color_ceiling) << 4);
+             c3_c = c3_c >> 4;
+             c1_c = c1_c << 4;
+             c2_c = c2_c << 4;
+             c3_c = c3_c << 4;
+             pixels[(y + yOffset) * SCREEN_WIDTH + i] = (((Uint32) 255) + (((Uint32) c3_c) << 8) + (((Uint32) c2_c) << 16) + (((Uint32) c1_c) << 24));
+             //SDL_SetRenderDrawColor(renderer, c1_c << 3, c2_c << 3, c3_c << 3, 255);
+             //SDL_RenderDrawLine(renderer, i, y + yOffset, i, y + yOffset + 2);
+             }
+             }*/
             
         }
     }
@@ -564,16 +607,12 @@ void raycast() {
 
 void game_loop() {
     
-    
-    for (int i = 0; i < 8; i++) texture[i].resize(textureWidth * textureHeight);
-    
-    
     SDL_SetRelativeMouseMode(SDL_bool(trapMouse));
     
     //While application is running
     while( !quit ) {
         
-        clear_screen();
+        SDL_LockTexture(texture, NULL,(void**) &pixels, &pitch);
         
         if (updateNoice && sandNoice) {
             for (int i = 0; i < SCREEN_WIDTH; i++) noice[i] = rand() % (SCREEN_HEIGHT / 2);
@@ -703,6 +742,10 @@ void game_loop() {
 }
 
 void update_screen() {
+    SDL_UnlockTexture(texture);
+    clear_screen();
+    //SDL_UpdateTexture(texture, NULL, pixels, SCREEN_WIDTH * sizeof(Uint32));
+    SDL_RenderCopy(renderer, texture, NULL, NULL);
     SDL_RenderPresent( renderer );
 }
 
