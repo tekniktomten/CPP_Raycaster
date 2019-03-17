@@ -118,7 +118,7 @@ int textureGranularity = 2;
 
 //Screen dimension constants
 const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
+const int SCREEN_HEIGHT = 360;
 
 //Starts up SDL and creates window
 bool init();
@@ -186,16 +186,18 @@ int maxYOffset = SCREEN_HEIGHT * 0.25;
 //Main loop flag
 bool quit = false;
 
-int noice[SCREEN_WIDTH];
-bool updateNoice = false;
-
-int x_shift1; // removes bug causing vertical white lines when chaning textureGranularity
-int x_shift2;
-
 //Event handler
 SDL_Event e;
 
+SDL_Rect textureRenderSize;
+
 bool init() {
+    
+    textureRenderSize.x = 0;
+    textureRenderSize.y = 0;
+    textureRenderSize.w = SCREEN_WIDTH * 2;
+    textureRenderSize.h = SCREEN_HEIGHT * 2;
+    
     //Initialization flag
     bool success = true;
     //Initialize SDL
@@ -209,7 +211,7 @@ bool init() {
             printf( "Warning: Linear texture filtering not enabled!" );
         }
         //Create window
-        window = SDL_CreateWindow( "RAYCASTER", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
+        window = SDL_CreateWindow( "RAYCASTER", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH * 2, SCREEN_HEIGHT * 2 + 120, SDL_WINDOW_SHOWN );
         if (fullscreen) SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
         if( window == NULL ) {
             printf( "Window could not be created! SDL Error: %s\n", SDL_GetError() );
@@ -490,10 +492,6 @@ void game_loop() {
             if (worldMap[(int) newPos.getY()][(int) newPos.getX()] <= 0) pos += dir.rotate(3.14159 / 2).norm() * actualSpeed * frameTime;
         }
         
-        updateNoice = false;
-        
-        if (lastPos.getX() != pos.getX() || lastPos.getY() != pos.getY()) updateNoice = true;
-        
         //Handle events on queue
         while( SDL_PollEvent( &e ) != 0 ) {
             
@@ -526,9 +524,11 @@ void game_loop() {
                         break;
                     }
                     case SDLK_ESCAPE: {
-                        //trapMouse = !trapMouse;
-                        //SDL_SetRelativeMouseMode(SDL_bool(trapMouse));
-                        quit = true;
+                        if (fullscreen) quit = true;
+                        else {
+                            trapMouse = !trapMouse;
+                            SDL_SetRelativeMouseMode(SDL_bool(trapMouse));
+                        }
                         break;
                     }
                     default: {
@@ -566,7 +566,6 @@ void game_loop() {
             }
             
             else if( e.type == SDL_MOUSEMOTION) {
-                updateNoice = true;
                 int x, y;
                 SDL_GetMouseState( &x, &y );
                 dir.rotateThis(e.motion.xrel / 2000.0);
@@ -587,11 +586,11 @@ void update_screen() {
     SDL_UnlockTexture(texture);
     clear_screen();
     //SDL_UpdateTexture(texture, NULL, pixels, SCREEN_WIDTH * sizeof(Uint32));
-    SDL_RenderCopy(renderer, texture, NULL, NULL);
+    SDL_RenderCopy(renderer, texture, NULL, &textureRenderSize);
     SDL_RenderPresent( renderer );
 }
 
 void clear_screen() {
-    SDL_SetRenderDrawColor( renderer, 80, 48, 16, 0xFF );
+    SDL_SetRenderDrawColor( renderer, 10, 20, 50, 0xFF );
     SDL_RenderClear( renderer );
 }
