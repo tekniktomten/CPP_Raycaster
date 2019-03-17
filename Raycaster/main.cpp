@@ -135,6 +135,8 @@ void update_screen();
 
 void clear_screen();
 
+void animate_gun();
+
 //The window we'll be rendering to
 SDL_Window* window = NULL;
 
@@ -153,6 +155,10 @@ double t = 0;
 double lastTime = 0;
 double frameTime = 0;
 int fps = 0;
+
+int gunSprite = 0;
+int shootTime = 0;
+bool shooting = false;
 
 Vector2d pos = Vector2d(8, 12);
 Vector2d dir = Vector2d(0, -1);
@@ -394,7 +400,7 @@ void raycast() {
                     c1 = (Uint8) (color >> 8);
                     c2 = (Uint8) (color >> 4) & 0x0f;
                     c3 = ((Uint8) (color) << 4);
-                    c3 = c3 >> 4;
+                    c3 = c3 >> 4; // todo
                     
                     if (!vertical_side) {
                         c1 = c1 << 4;
@@ -462,6 +468,7 @@ void game_loop() {
         SDL_LockTexture(texture, NULL,(void**) &pixels, &pitch);
         
         raycast();
+        animate_gun();
         
         lastTime = t;
         t = SDL_GetTicks();
@@ -470,7 +477,7 @@ void game_loop() {
         if (++countFPS > 30) {
             fps /= countFPS;
             countFPS = 0;
-            std::cout << "FPS: " << fps << std::endl;
+            //std::cout << "FPS: " << fps << std::endl;
         }
         update_screen();
         lastPos = pos.copy();
@@ -524,7 +531,7 @@ void game_loop() {
                         break;
                     }
                     case SDLK_ESCAPE: {
-                        if (fullscreen) quit = true;
+                        if (true) quit = true; // todo replace true
                         else {
                             trapMouse = !trapMouse;
                             SDL_SetRelativeMouseMode(SDL_bool(trapMouse));
@@ -576,7 +583,66 @@ void game_loop() {
             }
             
             else if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP) {
-                
+                gunSprite = 1;
+                shooting = true;
+                shootTime = SDL_GetTicks();
+            }
+        }
+    }
+}
+
+void animate_gun() {
+    Uint32 c;
+    if (SDL_GetTicks() > shootTime + 100 && shooting) {
+        gunSprite++;
+        shootTime = SDL_GetTicks();
+    }
+    if (gunSprite > 4) {
+        gunSprite = 0;
+        shooting = false;
+    }
+    for (int i = 0; i < 64 * 64; i++) {
+        switch (gunSprite) {
+            case 0:
+                c = pistol_ready[i];
+                break;
+            case 1:
+                c = pistol_atk1[i];
+                break;
+            case 2:
+                c = pistol_atk2[i];
+                break;
+            case 3:
+                c = pistol_atk3[i];
+                break;
+            case 4:
+                c = pistol_atk4[i];
+                break;
+            default:
+                c = pistol_ready[i];
+                break;
+        }
+        Uint8 c1 = (Uint8) (c >> 8);
+        Uint8 c2 = (Uint8) (c >> 4) & 0x0f;
+        Uint8 c3 = ((Uint8) (c) << 4);
+        c3 = c3 >> 4;
+        
+        if (gunSprite == 2) {
+            c1 = c1 << 4;
+            c2 = c2 << 4;
+            c3 = c3 << 4;
+        } else {
+            c1 = c1 << 3;
+            c2 = c2 << 3;
+            c3 = c3 << 3;
+        }
+        
+        if (c != 0x0908) {
+            for (int k = 0; k < 4; k++) {
+                pixels[(SCREEN_HEIGHT - 256 + (i / 64) * 4) * SCREEN_WIDTH + (i * 4 + k) % 256 + SCREEN_WIDTH / 2 - 128] = (((Uint32) c3) + (((Uint32) c2) << 8) + (((Uint32) c1) << 16) + (((Uint32) 255) << 24));
+                pixels[(SCREEN_HEIGHT - 256 + (i / 64) * 4 + 1) * SCREEN_WIDTH + (i * 4 + k) % 256 + SCREEN_WIDTH / 2 - 128] = (((Uint32) c3) + (((Uint32) c2) << 8) + (((Uint32) c1) << 16) + (((Uint32) 255) << 24));
+                pixels[(SCREEN_HEIGHT - 256 + (i / 64) * 4 + 2) * SCREEN_WIDTH + (i * 4 + k) % 256 + SCREEN_WIDTH / 2 - 128] = (((Uint32) c3) + (((Uint32) c2) << 8) + (((Uint32) c1) << 16) + (((Uint32) 255) << 24));
+                pixels[(SCREEN_HEIGHT - 256 + (i / 64) * 4 + 3) * SCREEN_WIDTH + (i * 4 + k) % 256 + SCREEN_WIDTH / 2 - 128] = (((Uint32) c3) + (((Uint32) c2) << 8) + (((Uint32) c1) << 16) + (((Uint32) 255) << 24));
             }
         }
     }
