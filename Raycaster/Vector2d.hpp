@@ -26,6 +26,8 @@ public:
     Vector2d operator * (const double b);
     Vector2d operator / (const double b);
     
+    double dot(const Vector2d b);
+    
     double mag();
     Vector2d copy();
     Vector2d norm();

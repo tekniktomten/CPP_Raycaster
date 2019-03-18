@@ -65,6 +65,10 @@ Vector2d Vector2d::operator / (const double b) {
     return Vector2d(x / b, y / b);
 }
 
+double Vector2d::dot(const Vector2d b) {
+    return x * b.getX() + y * b.getY();
+}
+
 double Vector2d::mag() {
     return sqrt(x*x+y*y);
 }

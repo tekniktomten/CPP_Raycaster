@@ -396,6 +396,7 @@ void raycast() {
                     int d = y * 256 + (wallHeight - SCREEN_HEIGHT) * 128;
                     int textureY = ((d * textureHeight) / wallHeight) / 256;
                     
+                    if (textureWidth * textureY + textureX > textureWidth * textureHeight || textureWidth * textureY + textureX < 0) break; // prevents crashes
                     switch (hit) {
                         case 1: {
                             color = ice[textureWidth * textureY + textureX];
@@ -502,11 +503,24 @@ void game_loop() {
         }
         update_screen();
         lastPos = pos.copy();
-        if (sprint) actualSpeed = movementSpeed * 2;
+        if (sprint) actualSpeed = movementSpeed * 5;
         else actualSpeed = movementSpeed;
         if (forward) {
-            Vector2d newPos = pos + dir.norm() * actualSpeed * frameTime * 3;
-            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] <= 0) pos += dir.norm() * actualSpeed * frameTime;        }
+            Vector2d newPos = pos + dir.norm() * actualSpeed * frameTime;
+            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] <= 0) pos += dir.norm() * actualSpeed * frameTime;
+            else {
+                Vector2d delta = Vector2d(0, 0);
+                // todo fungerar bara vid vinklar större än 45
+                if ((int) newPos.getX() != (int) pos.getX() && abs(dir.getY()) > abs(dir.getX())) {
+                    delta = Vector2d(0, dir.norm().getY())  * actualSpeed * frameTime;
+                }
+                else if ((int) newPos.getY() != (int) pos.getY()) {
+                    delta = Vector2d(dir.norm().getX(), 0)  * actualSpeed * frameTime;
+                }
+                newPos = pos + delta * 5;
+                if (worldMap[(int) newPos.getY()][(int) newPos.getX()] <= 0) pos += delta;
+            }
+        }
         if (left) {
             Vector2d newPos = pos + dir.rotate(-3.14159 / 2).norm() * actualSpeed * frameTime * 3;
             if (worldMap[(int) newPos.getY()][(int) newPos.getX()] <= 0) pos += dir.rotate(-3.14159 / 2).norm() * actualSpeed * frameTime;
@@ -680,20 +694,21 @@ void drawDogs() {
         int spriteScreenX = int((SCREEN_WIDTH / 2) * (1 + transformed.getX() / transformed.getY()));
         int spriteHeight = abs(int(SCREEN_HEIGHT / transformed.getY()));
         int drawStartY = SCREEN_HEIGHT / 2 - spriteHeight / 2;
-        if (drawStartY < -yOffset) drawStartY = yOffset; // todo kanske 0?
+        if (drawStartY < 0) drawStartY = 0;
         int drawEndY = SCREEN_HEIGHT / 2 + spriteHeight / 2;
-        if (drawEndY > SCREEN_HEIGHT + yOffset) drawEndY = SCREEN_HEIGHT + yOffset; // kanske 0?
+        if (drawEndY > SCREEN_HEIGHT) drawEndY = SCREEN_HEIGHT;
         int spriteWidth = abs(int(SCREEN_WIDTH / transformed.getY()));
         int drawStartX = spriteScreenX - spriteWidth / 2;
         if (drawStartX < 0) drawStartX = 0;
         int drawEndX = spriteScreenX + spriteWidth / 2;
-        if (drawEndX > SCREEN_WIDTH) drawEndX = SCREEN_WIDTH; // kanske 0?
+        if (drawEndX > SCREEN_WIDTH) drawEndX = SCREEN_WIDTH;
         for (int x = drawStartX; x < drawEndX; x++) {
             int texX = int(256 * (x - (-spriteWidth / 2 + spriteScreenX)) * 64 / spriteWidth) / 256;
             if (transformed.getY() > 0 && x > 0 && x < SCREEN_WIDTH && transformed.getY() < zBuffer[x]) {
                 for (int y = drawStartY; y < drawEndY; y++) {
                     int d = y * 256 - SCREEN_HEIGHT * 128 + spriteHeight * 128;
                     int texY = ((d * 64) / spriteHeight) / 256;
+                    //sif (texY > 60) std::cout << texY << std::endl;
                     Uint32 c = dog[texY * 64 + texX];
                     if (c != 0x0908) {
                         Uint8 c1 = (Uint8) (c >> 8);
@@ -710,8 +725,7 @@ void drawDogs() {
                         c1 = ((int) c1) * 50 / r;
                         c2 = ((int) c2) * 50 / r;
                         c3 = ((int) c3) * 50 / r;
-                        // todo lazy
-                        if (y + yOffset + spriteHeight / 2 < SCREEN_HEIGHT) pixels[(y + yOffset + spriteHeight / 2) * SCREEN_WIDTH + x] = (((Uint32) c3) + (((Uint32) c2) << 8) + (((Uint32) c1) << 16) + (((Uint32) 255) << 24));
+                        pixels[(y + yOffset + spriteHeight / 2) * SCREEN_WIDTH + x] = (((Uint32) c3) + (((Uint32) c2) << 8) + (((Uint32) c1) << 16) + (((Uint32) 255) << 24));
                     }
                 }
             }
