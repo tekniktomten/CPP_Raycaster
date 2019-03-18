@@ -149,7 +149,7 @@ SDL_Texture* texture = NULL;
 
 Uint32* pixels = NULL;
 
-int pitch = NULL;
+int pitch;
 
 bool trapMouse = true;
 
@@ -189,7 +189,7 @@ bool left = false;
 bool sprint = false;
 
 int yOffset = 0;
-int maxYOffset = SCREEN_HEIGHT * 0.25;
+int maxYOffset = SCREEN_HEIGHT * 0.4;
 
 //Main loop flag
 bool quit = false;
@@ -436,9 +436,9 @@ void raycast() {
                     
                     //int r = std::sqrt((float)(i - SCREEN_WIDTH / 2) * (i - SCREEN_WIDTH / 2) + (y + yOffset - SCREEN_HEIGHT / 2) * (y + yOffset - SCREEN_HEIGHT / 2)) + 25;
                     int r = abs((i - SCREEN_WIDTH / 2)) + abs((y + yOffset - SCREEN_HEIGHT / 2)) + 25;
-                    c1 = ((int) c1) * 30 / r;
-                    c2 = ((int) c2) * 30 / r;
-                    c3 = ((int) c3) * 30 / r;
+                    c1 = ((int) c1) * 50 / r;
+                    c2 = ((int) c2) * 50 / r;
+                    c3 = ((int) c3) * 50 / r;
                     
                     pixels[(y + yOffset) * SCREEN_WIDTH + i] = (((Uint32) c3) + (((Uint32) c2) << 8) + (((Uint32) c1) << 16) + (((Uint32) 255) << 24));
                 } else pixels[(y + yOffset) * SCREEN_WIDTH + i] = 4278190080; // black
@@ -457,9 +457,9 @@ void raycast() {
             Uint8 c3_c;
             
             for (int y = actualWallBottom - yOffset; y < SCREEN_HEIGHT + yOffset; y++) {
-                c1_c = 0;
-                c2_c = 0;
-                c3_c = (y / 32);
+                c1_c = (y / 12);
+                c2_c = 10;
+                c3_c = (y / 10);
                 pixels[(SCREEN_HEIGHT - y + yOffset - 1) * SCREEN_WIDTH + i] = (((Uint32) c3_c) + (((Uint32) c2_c) << 8) + (((Uint32) c1_c) << 16) + (((Uint32) 255) << 24));
             }
 
@@ -487,8 +487,9 @@ void game_loop() {
         SDL_LockTexture(texture, NULL,(void**) &pixels, &pitch);
         
         raycast();
-        animate_gun();
         drawDogs();
+        animate_gun();
+        pixels[SCREEN_WIDTH * SCREEN_HEIGHT / 2 + SCREEN_WIDTH / 2] = 255 << 8; // reticle
         
         lastTime = t;
         t = SDL_GetTicks();
@@ -689,7 +690,7 @@ void drawDogs() {
         if (drawEndX > SCREEN_WIDTH) drawEndX = SCREEN_WIDTH; // kanske 0?
         for (int x = drawStartX; x < drawEndX; x++) {
             int texX = int(256 * (x - (-spriteWidth / 2 + spriteScreenX)) * 64 / spriteWidth) / 256;
-            if (transformed.getY() > 0 && x > 0 && x < SCREEN_HEIGHT && transformed.getY() < zBuffer[x]) {
+            if (transformed.getY() > 0 && x > 0 && x < SCREEN_WIDTH && transformed.getY() < zBuffer[x]) {
                 for (int y = drawStartY; y < drawEndY; y++) {
                     int d = y * 256 - SCREEN_HEIGHT * 128 + spriteHeight * 128;
                     int texY = ((d * 64) / spriteHeight) / 256;
@@ -702,7 +703,15 @@ void drawDogs() {
                         c1 = c1 << 4;
                         c2 = c2 << 4;
                         c3 = c3 << 4;
-                        pixels[(y + yOffset) * SCREEN_WIDTH + x] = (((Uint32) c3) + (((Uint32) c2) << 8) + (((Uint32) c1) << 16) + (((Uint32) 255) << 24));
+                        c1 -= c1 * transformed.getY() / 31;
+                        c2 -= c2 * transformed.getY() / 31;
+                        c3 -= c3 * transformed.getY() / 31;
+                        int r = abs((x - SCREEN_WIDTH / 2)) + abs((y + yOffset - SCREEN_HEIGHT / 2)) + 25;
+                        c1 = ((int) c1) * 50 / r;
+                        c2 = ((int) c2) * 50 / r;
+                        c3 = ((int) c3) * 50 / r;
+                        // todo lazy
+                        if (y + yOffset + spriteHeight / 2 < SCREEN_HEIGHT) pixels[(y + yOffset + spriteHeight / 2) * SCREEN_WIDTH + x] = (((Uint32) c3) + (((Uint32) c2) << 8) + (((Uint32) c1) << 16) + (((Uint32) 255) << 24));
                     }
                 }
             }
