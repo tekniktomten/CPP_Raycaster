@@ -137,6 +137,8 @@ void clear_screen();
 
 void animate_gun();
 
+void drawDogs();
+
 //The window we'll be rendering to
 SDL_Window* window = NULL;
 
@@ -197,7 +199,23 @@ SDL_Event e;
 
 SDL_Rect textureRenderSize;
 
+struct Dog {
+    double x;
+    double y;
+};
+
+int zBuffer[SCREEN_WIDTH];
+
+std::vector<Dog> dogs = {};
+
 bool init() {
+    
+    for (int i = 0; i < 3; i++) {
+        Dog d;
+        d.x = i * 5;
+        d.y = i * 7;
+        dogs.push_back(d);
+    }
     
     textureRenderSize.x = 0;
     textureRenderSize.y = 0;
@@ -452,6 +470,7 @@ void raycast() {
                 pixels[(y + yOffset) * SCREEN_WIDTH + i] = (((Uint32) c3_c) + (((Uint32) c2_c) << 8) + (((Uint32) c1_c) << 16) + (((Uint32) 255) << 24));
             }
         }
+        zBuffer[i] = orthDistance;
     }
 }
 
@@ -469,6 +488,7 @@ void game_loop() {
         
         raycast();
         animate_gun();
+        drawDogs();
         
         lastTime = t;
         t = SDL_GetTicks();
@@ -477,7 +497,7 @@ void game_loop() {
         if (++countFPS > 30) {
             fps /= countFPS;
             countFPS = 0;
-            //std::cout << "FPS: " << fps << std::endl;
+            std::cout << "FPS: " << fps << std::endl;
         }
         update_screen();
         lastPos = pos.copy();
@@ -643,6 +663,48 @@ void animate_gun() {
                 pixels[(SCREEN_HEIGHT - 256 + (i / 64) * 4 + 1) * SCREEN_WIDTH + (i * 4 + k) % 256 + SCREEN_WIDTH / 2 - 128] = (((Uint32) c3) + (((Uint32) c2) << 8) + (((Uint32) c1) << 16) + (((Uint32) 255) << 24));
                 pixels[(SCREEN_HEIGHT - 256 + (i / 64) * 4 + 2) * SCREEN_WIDTH + (i * 4 + k) % 256 + SCREEN_WIDTH / 2 - 128] = (((Uint32) c3) + (((Uint32) c2) << 8) + (((Uint32) c1) << 16) + (((Uint32) 255) << 24));
                 pixels[(SCREEN_HEIGHT - 256 + (i / 64) * 4 + 3) * SCREEN_WIDTH + (i * 4 + k) % 256 + SCREEN_WIDTH / 2 - 128] = (((Uint32) c3) + (((Uint32) c2) << 8) + (((Uint32) c1) << 16) + (((Uint32) 255) << 24));
+            }
+        }
+    }
+}
+
+void drawDogs() {
+    // todo sort the sprites
+    for (int i = 0; i < dogs.size(); i++) {
+        // relative distance
+        Vector2d spriteDistance = Vector2d(dogs[i].x - pos.getX(), dogs[i].y - pos.getY());
+        double inverseDeterminant = 1.0 / (cam.getX() * dir.getY() - cam.getY() * dir.getX());
+        Vector2d transformed = Vector2d(dir.getY() * spriteDistance.getX() - dir.getX() * spriteDistance.getY(), -cam.getY() * spriteDistance.getX() + cam.getX() * spriteDistance.getY());
+        transformed *= inverseDeterminant;
+        int spriteScreenX = int((SCREEN_WIDTH / 2) * (1 + transformed.getX() / transformed.getY()));
+        int spriteHeight = abs(int(SCREEN_HEIGHT / transformed.getY()));
+        int drawStartY = SCREEN_HEIGHT / 2 - spriteHeight / 2;
+        if (drawStartY < -yOffset) drawStartY = yOffset; // todo kanske 0?
+        int drawEndY = SCREEN_HEIGHT / 2 + spriteHeight / 2;
+        if (drawEndY > SCREEN_HEIGHT + yOffset) drawEndY = SCREEN_HEIGHT + yOffset; // kanske 0?
+        int spriteWidth = abs(int(SCREEN_WIDTH / transformed.getY()));
+        int drawStartX = spriteScreenX - spriteWidth / 2;
+        if (drawStartX < 0) drawStartX = 0;
+        int drawEndX = spriteScreenX + spriteWidth / 2;
+        if (drawEndX > SCREEN_WIDTH) drawEndX = SCREEN_WIDTH; // kanske 0?
+        for (int x = drawStartX; x < drawEndX; x++) {
+            int texX = int(256 * (x - (-spriteWidth / 2 + spriteScreenX)) * 64 / spriteWidth) / 256;
+            if (transformed.getY() > 0 && x > 0 && x < SCREEN_HEIGHT && transformed.getY() < zBuffer[x]) {
+                for (int y = drawStartY; y < drawEndY; y++) {
+                    int d = y * 256 - SCREEN_HEIGHT * 128 + spriteHeight * 128;
+                    int texY = ((d * 64) / spriteHeight) / 256;
+                    Uint32 c = dog[texY * 64 + texX];
+                    if (c != 0x0908) {
+                        Uint8 c1 = (Uint8) (c >> 8);
+                        Uint8 c2 = (Uint8) (c >> 4) & 0x0f;
+                        Uint8 c3 = ((Uint8) (c) << 4);
+                        c3 = c3 >> 4;
+                        c1 = c1 << 4;
+                        c2 = c2 << 4;
+                        c3 = c3 << 4;
+                        pixels[(y + yOffset) * SCREEN_WIDTH + x] = (((Uint32) c3) + (((Uint32) c2) << 8) + (((Uint32) c1) << 16) + (((Uint32) 255) << 24));
+                    }
+                }
             }
         }
     }
