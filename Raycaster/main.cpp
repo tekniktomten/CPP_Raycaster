@@ -210,7 +210,7 @@ std::vector<Dog> dogs = {};
 
 bool init() {
     
-    for (int i = 0; i < 3; i++) {
+    for (int i = 1; i < 6; i++) {
         Dog d;
         d.x = i * 5;
         d.y = i * 7;
@@ -686,6 +686,14 @@ void animate_gun() {
 void drawDogs() {
     // todo sort the sprites
     for (int i = 0; i < dogs.size(); i++) {
+        Vector2d dogPos = Vector2d(dogs[i].x, dogs[i].y);
+        Vector2d newDogPos = dogPos + (pos - dogPos).norm() * 2 * frameTime;
+        if ((pos - newDogPos).mag() > 2) {
+            if (worldMap[(int) newDogPos.getY()][(int) newDogPos.getX()] <= 0) {
+                dogs[i].x = newDogPos.getX();
+                dogs[i].y = newDogPos.getY();
+            }
+        }
         // relative distance
         Vector2d spriteDistance = Vector2d(dogs[i].x - pos.getX(), dogs[i].y - pos.getY());
         double inverseDeterminant = 1.0 / (cam.getX() * dir.getY() - cam.getY() * dir.getX());
@@ -704,7 +712,8 @@ void drawDogs() {
         if (drawEndX > SCREEN_WIDTH) drawEndX = SCREEN_WIDTH;
         for (int x = drawStartX; x < drawEndX; x++) {
             int texX = int(256 * (x - (-spriteWidth / 2 + spriteScreenX)) * 64 / spriteWidth) / 256;
-            if (transformed.getY() > 0 && x > 0 && x < SCREEN_WIDTH && transformed.getY() < zBuffer[x]) {
+            // todo 0.1 eller 0?
+            if (transformed.getY() > 0.1 && x > 0 && x < SCREEN_WIDTH && transformed.getY() < zBuffer[x]) {
                 for (int y = drawStartY; y < drawEndY; y++) {
                     int d = y * 256 - SCREEN_HEIGHT * 128 + spriteHeight * 128;
                     int texY = ((d * 64) / spriteHeight) / 256;
@@ -725,7 +734,7 @@ void drawDogs() {
                         c1 = ((int) c1) * 50 / r;
                         c2 = ((int) c2) * 50 / r;
                         c3 = ((int) c3) * 50 / r;
-                        pixels[(y + yOffset + spriteHeight / 2) * SCREEN_WIDTH + x] = (((Uint32) c3) + (((Uint32) c2) << 8) + (((Uint32) c1) << 16) + (((Uint32) 255) << 24));
+                        pixels[(y + yOffset + spriteHeight / 2) * SCREEN_WIDTH + x] = (((Uint32) c3) + (((Uint32) c2) << 8) + (((Uint32) c1) << 16) + (((Uint32) 255) << 24)); // todo krashar här
                     }
                 }
             }
