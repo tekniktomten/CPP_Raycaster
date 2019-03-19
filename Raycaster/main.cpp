@@ -124,6 +124,8 @@ bool loadMedia();
 //Frees media and shuts down SDL
 void close();
 
+void main_menu();
+
 void game_loop();
 
 void update_screen();
@@ -251,10 +253,9 @@ void close() {
 
 int main( int argc, char* args[] ) {
     
-    //readBMP("daggerfall_tpack/eridu200.bmp");
-    
     //Start up SDL and create window
     if(init()) {
+        main_menu();
         game_loop();
     }
     
@@ -271,54 +272,47 @@ void game_loop() {
     fps = 0;
     
     //While application is running
+    bool pause = false;
     while( !quit ) {
-        
-        SDL_LockTexture(texture, NULL,(void**) &pixels, &pitch);
-        
-        raycaster.raycast(&player, worldMap, 2, false, false);
-        drawDogs(&player);
-        animate_gun();
-        pixels[SCREEN_WIDTH * SCREEN_HEIGHT / 2 + SCREEN_WIDTH / 2] = 255 << 8; // reticle
-        
-        lastTime = t;
-        t = SDL_GetTicks();
-        frameTime = (t - lastTime) / 1000.0;
-        fps += (int) (1.0 / frameTime);
-        if (++countFPS > 30) {
-            fps /= countFPS;
-            countFPS = 0;
-            std::cout << "FPS: " << fps << std::endl;
-        }
-        update_screen();
-        if (sprint) actualSpeed = movementSpeed * 5;
-        else actualSpeed = movementSpeed;
-        if (forward) {
-            Vector2d newPos = player.pos + player.dir.norm() * actualSpeed * frameTime;
-            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] <= 0) player.pos += player.dir.norm() * actualSpeed * frameTime;
-            else {
-                Vector2d delta = Vector2d(0, 0);
-                // todo fungerar bara vid vinklar större än 45
-                if ((int) newPos.getX() != (int) player.pos.getX() && abs(player.dir.getY()) > abs(player.dir.getX())) {
-                    delta = Vector2d(0, player.dir.norm().getY())  * actualSpeed * frameTime;
+        if (!pause) {
+            SDL_LockTexture(texture, NULL,(void**) &pixels, &pitch);
+            
+            raycaster.raycast(&player, worldMap, 2, false, false);
+            drawDogs(&player);
+            animate_gun();
+            pixels[SCREEN_WIDTH * SCREEN_HEIGHT / 2 + SCREEN_WIDTH / 2] = 255 << 8; // reticle
+            update_screen();
+            
+            if (sprint) actualSpeed = movementSpeed * 5;
+            else actualSpeed = movementSpeed;
+            if (forward) {
+                Vector2d newPos = player.pos + player.dir.norm() * actualSpeed * frameTime;
+                if (worldMap[(int) newPos.getY()][(int) newPos.getX()] <= 0) player.pos += player.dir.norm() * actualSpeed * frameTime;
+                else {
+                    Vector2d delta = Vector2d(0, 0);
+                    // todo fungerar bara vid vinklar större än 45
+                    if ((int) newPos.getX() != (int) player.pos.getX() && abs(player.dir.getY()) > abs(player.dir.getX())) {
+                        delta = Vector2d(0, player.dir.norm().getY())  * actualSpeed * frameTime;
+                    }
+                    else if ((int) newPos.getY() != (int) player.pos.getY()) {
+                        delta = Vector2d(player.dir.norm().getX(), 0)  * actualSpeed * frameTime;
+                    }
+                    newPos = player.pos + delta * 5;
+                    if (worldMap[(int) newPos.getY()][(int) newPos.getX()] <= 0) player.pos += delta;
                 }
-                else if ((int) newPos.getY() != (int) player.pos.getY()) {
-                    delta = Vector2d(player.dir.norm().getX(), 0)  * actualSpeed * frameTime;
-                }
-                newPos = player.pos + delta * 5;
-                if (worldMap[(int) newPos.getY()][(int) newPos.getX()] <= 0) player.pos += delta;
             }
-        }
-        if (left) {
-            Vector2d newPos = player.pos + player.dir.rotate(-3.14159 / 2).norm() * actualSpeed * frameTime * 3;
-            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] <= 0) player.pos += player.dir.rotate(-3.14159 / 2).norm() * actualSpeed * frameTime;
-        }
-        if (backward) {
-            Vector2d newPos = player.pos - player.dir.norm() * actualSpeed * frameTime * 3;
-            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] <= 0) player.pos -= player.dir.norm() * actualSpeed * frameTime;
-        }
-        if (right) {
-            Vector2d newPos = player.pos + player.dir.rotate(3.14159 / 2).norm() * actualSpeed * frameTime * 3;
-            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] <= 0) player.pos += player.dir.rotate(3.14159 / 2).norm() * actualSpeed * frameTime;
+            if (left) {
+                Vector2d newPos = player.pos + player.dir.rotate(-3.14159 / 2).norm() * actualSpeed * frameTime * 3;
+                if (worldMap[(int) newPos.getY()][(int) newPos.getX()] <= 0) player.pos += player.dir.rotate(-3.14159 / 2).norm() * actualSpeed * frameTime;
+            }
+            if (backward) {
+                Vector2d newPos = player.pos - player.dir.norm() * actualSpeed * frameTime * 3;
+                if (worldMap[(int) newPos.getY()][(int) newPos.getX()] <= 0) player.pos -= player.dir.norm() * actualSpeed * frameTime;
+            }
+            if (right) {
+                Vector2d newPos = player.pos + player.dir.rotate(3.14159 / 2).norm() * actualSpeed * frameTime * 3;
+                if (worldMap[(int) newPos.getY()][(int) newPos.getX()] <= 0) player.pos += player.dir.rotate(3.14159 / 2).norm() * actualSpeed * frameTime;
+            }
         }
         
         //Handle events on queue
@@ -353,8 +347,9 @@ void game_loop() {
                         break;
                     }
                     case SDLK_ESCAPE: {
-                        if (true) quit = true; // todo replace true
+                        if (fullscreen) quit = true; // todo replace true
                         else {
+                            pause = !pause;
                             trapMouse = !trapMouse;
                             SDL_SetRelativeMouseMode(SDL_bool(trapMouse));
                         }
@@ -409,6 +404,15 @@ void game_loop() {
                 shooting = true;
                 shootTime = SDL_GetTicks();
             }
+        }
+        lastTime = t;
+        t = SDL_GetTicks();
+        frameTime = (t - lastTime) / 1000.0;
+        fps += (int) (1.0 / frameTime);
+        if (++countFPS > 30) {
+            fps /= countFPS;
+            countFPS = 0;
+            std::cout << "FPS: " << fps << std::endl;
         }
     }
 }
@@ -546,4 +550,86 @@ void update_screen() {
 void clear_screen() {
     SDL_SetRenderDrawColor( renderer, 10, 20, 50, 0xFF );
     SDL_RenderClear( renderer );
+}
+
+void main_menu() {
+    bool menu_done = false;
+    while (!menu_done) {
+        clear_screen();
+        SDL_Rect play;
+        play.x = SCREEN_WIDTH / 2;
+        play.y = SCREEN_HEIGHT / 3;
+        play.w = 100;
+        play.h = 40;
+        SDL_SetRenderDrawColor(renderer, 42, 42, 42, 255);
+        SDL_RenderFillRect(renderer, &play);
+        SDL_RenderPresent(renderer);
+        
+        //Handle events on queue
+        while( SDL_PollEvent( &e ) != 0 ) {
+            
+            //User requests quit
+            if( e.type == SDL_QUIT )
+            {
+                quit = true;
+                menu_done = true;
+            }
+            
+            else if( e.type == SDL_KEYDOWN ) {
+                switch(e.key.keysym.sym) {
+                    case SDLK_w: {
+                        break;
+                    }
+                    case SDLK_a: {
+                        left = true;
+                        break;
+                    }
+                    case SDLK_s: {
+                        break;
+                    }
+                    case SDLK_d: {
+                        break;
+                    }
+                    case SDLK_ESCAPE: {
+                        if (fullscreen) quit = true;
+                        break;
+                    }
+                    default: {
+                        break;
+                    }
+                }
+            }
+            
+            else if( e.type == SDL_KEYUP ) {
+                switch(e.key.keysym.sym) {
+                    case SDLK_w: {
+                        break;
+                    }
+                    case SDLK_a: {
+                        break;
+                    }
+                    case SDLK_s: {
+                        break;
+                    }
+                    case SDLK_d: {
+                        break;
+                    }
+                    case SDL_SCANCODE_RETURN: {
+                        break;
+                    }
+                    default: {
+                        break;
+                    }
+                }
+            }
+            
+            else if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP) { // todo only left-click
+                int x, y;
+                SDL_GetMouseState( &x, &y );
+                if (x > play.x && x < play.x + play.w && y > play.y && y < play.y + play.h) {
+                    menu_done = true;
+                }
+            }
+        }
+    }
 }
