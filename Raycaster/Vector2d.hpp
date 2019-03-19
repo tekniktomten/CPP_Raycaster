@@ -8,6 +8,7 @@ private:
     double y;
     
 public:
+    Vector2d();
     Vector2d(double x_, double y_);
     
     double getX() const;

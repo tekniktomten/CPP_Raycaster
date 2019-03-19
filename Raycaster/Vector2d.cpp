@@ -2,6 +2,11 @@
 #include <stdio.h>
 #include <cmath>
 
+Vector2d::Vector2d() {
+    x = 0;
+    y = 0;
+}
+
 Vector2d::Vector2d(double x_, double y_) {
     x = x_;
     y = y_;

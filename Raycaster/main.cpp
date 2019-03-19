@@ -1,4 +1,3 @@
-#include <SDL2/SDL.h>
 #include <stdio.h>
 #include <string>
 #include <cmath>
@@ -9,8 +8,8 @@
 #include <bitset>
 #include <stdlib.h>
 #include <thread>
-#include "Vector2d.hpp"
-#include "Bitmaps.cpp"
+#include "Raycaster.hpp"
+#include "global.hpp"
 
 #define mapWidth 32
 #define mapHeight 96
@@ -116,17 +115,6 @@ int worldMap[mapHeight][mapWidth] = {
 
 bool fullscreen = false;
 
-int wallH = 2;
-
-int textureWidth = 128;
-int textureHeight = 128 * wallH;
-
-int textureGranularity = 2;
-
-//Screen dimension constants
-const int SCREEN_WIDTH = 480;
-const int SCREEN_HEIGHT = 270;
-
 //Starts up SDL and creates window
 bool init();
 
@@ -154,9 +142,9 @@ SDL_Renderer* renderer = NULL;
 
 SDL_Texture* texture = NULL;
 
-Uint32* pixels = NULL;
+Player player = Player();
 
-int pitch;
+Raycaster raycaster = Raycaster(pixels, &player);
 
 bool trapMouse = true;
 
@@ -169,24 +157,6 @@ int gunSprite = 0;
 int shootTime = 0;
 bool shooting = false;
 
-Vector2d pos = Vector2d(16, 94);
-Vector2d dir = Vector2d(0, -1);
-Vector2d cam = Vector2d(0.707, 0);
-Vector2d box = Vector2d(22, 12); // Should always contain integers
-Vector2d rayDir = Vector2d(0, 0);
-Vector2d rayDistance = Vector2d(0, 0);
-Vector2d sideToNextSide = Vector2d(0, 0);
-Vector2d step = Vector2d(0, 0);
-Vector2d lastPos = Vector2d(0, 0);
-Vector2d floorWall = Vector2d(0, 0);
-
-double orthDistance;
-int hit = false;
-bool vertical_side = false;
-int wallHeight;
-int wallTop;
-int wallBottom;
-
 double movementSpeed = 5;
 double actualSpeed = movementSpeed;
 bool forward = false;
@@ -194,9 +164,6 @@ bool backward = false;
 bool right = false;
 bool left = false;
 bool sprint = false;
-
-int yOffset = 0;
-int maxYOffset = SCREEN_HEIGHT * 0.4;
 
 //Main loop flag
 bool quit = false;
@@ -210,8 +177,6 @@ struct Dog {
     double x;
     double y;
 };
-
-int zBuffer[SCREEN_WIDTH];
 
 std::vector<Dog> dogs = {};
 
@@ -263,9 +228,8 @@ bool init() {
     }
     
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT);
-    pixels = new Uint32[SCREEN_WIDTH * SCREEN_HEIGHT];
+    
     memset(pixels, 0, SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(Uint32));
-    pitch = SCREEN_WIDTH * sizeof(Uint32);
     
     if (!success) printf( "Failed to initialize!\n" );
     return success;
@@ -301,189 +265,10 @@ int main( int argc, char* args[] ) {
 }
 
 void raycast() {
-    for (int i = 0; i < SCREEN_WIDTH; i++) {
-        
-        box = Vector2d((int) pos.getX(), (int) pos.getY());
-        
-        rayDir = (cam * (2.0 * i / SCREEN_WIDTH - 1.0)) + dir;
-        
-        sideToNextSide = Vector2d(std::abs(1.0 / rayDir.getX()), std::abs(1.0 / rayDir.getY()));
-        
-        hit = false;
-        
-        if (rayDir.getX() < 0) {
-            step = Vector2d(-1, 0);
-            rayDistance = Vector2d((pos.getX() - box.getX()) * sideToNextSide.getX(), 0);
-        } else {
-            step = Vector2d(1, 0);
-            rayDistance = Vector2d((box.getX() - pos.getX() + 1) * sideToNextSide.getX(), 0);
-        }
-        if (rayDir.getY() < 0) {
-            step += Vector2d(0, -1);
-            rayDistance += Vector2d(0, (pos.getY() - box.getY()) * sideToNextSide.getY());
-        } else {
-            step += Vector2d(0, 1);
-            rayDistance += Vector2d(0, (box.getY() - pos.getY() + 1) * sideToNextSide.getY());
-        }
-        
-        bool tooFar = false;
-        
-        //Digital Differential Analysis
-        while (!hit) {
-            if (rayDistance.getX() < rayDistance.getY()) {
-                rayDistance += Vector2d(sideToNextSide.getX(), 0);
-                box += Vector2d(step.getX(), 0);
-                vertical_side = true;
-                orthDistance = (box.getX() - pos.getX() + (1.0 - step.getX()) / 2.0) / rayDir.getX();
-            } else {
-                rayDistance += Vector2d(0, sideToNextSide.getY());
-                box += Vector2d(0, step.getY());
-                vertical_side = false;
-                orthDistance = (box.getY() - pos.getY() + (1.0 - step.getY()) / 2.0) / rayDir.getY();
-            }
-            if (worldMap[(int) box.getY()][(int) box.getX()] > 0) {
-                hit = worldMap[(int) box.getY()][(int) box.getX()];
-            }
-            else if (orthDistance > 30) {
-                tooFar = true;
-                break;
-            }
-        }
-        
-        /*
-        if (vertical_side) {
-            orthDistance = (box.getX() - pos.getX() + (1.0 - step.getX()) / 2.0) / rayDir.getX();
-        } else {
-            orthDistance = (box.getY() - pos.getY() + (1.0 - step.getY()) / 2.0) / rayDir.getY();
-        }*/
-        
-        // this can be hardcoded if tooFar
-        wallHeight = (int) (SCREEN_HEIGHT / orthDistance) * wallH;
-        wallTop = (SCREEN_HEIGHT - wallHeight) / 2.0;
-        //if (wallTop < 0) wallTop = 0;
-        wallBottom = (SCREEN_HEIGHT + wallHeight) / 2.0;
-        //if (wallBottom > SCREEN_HEIGHT) wallBottom = SCREEN_HEIGHT;
-        
-        double wallX; // where the wall was hit
-        if (vertical_side) wallX = pos.getY() + rayDir.getY() * orthDistance;
-        else wallX = pos.getX() + rayDir.getX() * orthDistance;
-        wallX -= floor(wallX);
-        
-        int textureX = (int) (wallX * (double) textureWidth); // x cordinate in texture domain
-        if ((vertical_side && rayDir.getX() > 0) or (!vertical_side && rayDir.getY() < 0)) textureX = textureWidth - textureX - 1;
-        
-        wallTop += yOffset;
-        wallBottom += yOffset;
-        
-        int actualWallTop = wallTop;
-        int actualWallBottom = wallBottom;
-        
-        if (wallTop < 0) wallTop = 0;
-        if (wallBottom > SCREEN_HEIGHT) wallBottom = SCREEN_HEIGHT;
-        
-        /*if (textureIndex == 33) {
-         // draws untextured wall
-         if (vertical_side) SDL_SetRenderDrawColor(renderer, red, green, blue, 255);
-         else SDL_SetRenderDrawColor(renderer, red / 2, green / 2, blue / 2, 255);
-         SDL_RenderDrawLine(renderer, i, wallTop, i, wallBottom);
-         } else {*/
-        
-        if (true) {
-            
-            Uint8 c1;
-            Uint8 c2;
-            Uint8 c3;
-            
-            Uint16 color;
-            
-            for (int y = wallTop - yOffset; y < wallBottom - yOffset; y++) {
-                
-                if (!tooFar) {
-                    
-                    int d = y * 256 + (wallHeight - SCREEN_HEIGHT) * 128;
-                    int textureY = ((d * textureHeight) / wallHeight) / 256;
-                    
-                    if (textureWidth * textureY + textureX > textureWidth * textureHeight || textureWidth * textureY + textureX < 0) break; // prevents crashes
-                    switch (hit) {
-                        case 1: {
-                            color = ice[textureWidth * textureY + textureX];
-                            break;
-                        }
-                        case 2: {
-                            color = ice2[textureWidth * textureY + textureX];
-                            break;
-                        }
-                        case 3: {
-                            color = skull[textureWidth * textureY + textureX];
-                            break;
-                        }
-                        default: {
-                            color = wood[textureWidth * textureY + textureX];
-                            break;
-                        }
-                    }
-                    
-                    c1 = (Uint8) (color >> 8);
-                    c2 = (Uint8) (color >> 4) & 0x0f;
-                    c3 = ((Uint8) (color) << 4);
-                    c3 = c3 >> 4; // todo
-                    
-                    if (!vertical_side) {
-                        c1 = c1 << 4;
-                        c2 = c2 << 4;
-                        c3 = c3 << 4;
-                    } else {
-                        c1 = c1 << 3;
-                        c2 = c2 << 3;
-                        c3 = c3 << 3;
-                    }
-                    
-                    c1 -= c1 * orthDistance / 31;
-                    c2 -= c2 * orthDistance / 31;
-                    c3 -= c3 * orthDistance / 31;
-                    
-                    //int r = std::sqrt((float)(i - SCREEN_WIDTH / 2) * (i - SCREEN_WIDTH / 2) + (y + yOffset - SCREEN_HEIGHT / 2) * (y + yOffset - SCREEN_HEIGHT / 2)) + 25;
-                    int r = abs((i - SCREEN_WIDTH / 2)) + abs((y + yOffset - SCREEN_HEIGHT / 2)) + 25;
-                    c1 = ((int) c1) * 50 / r;
-                    c2 = ((int) c2) * 50 / r;
-                    c3 = ((int) c3) * 50 / r;
-                    
-                    pixels[(y + yOffset) * SCREEN_WIDTH + i] = (((Uint32) c3) + (((Uint32) c2) << 8) + (((Uint32) c1) << 16) + (((Uint32) 255) << 24));
-                } else pixels[(y + yOffset) * SCREEN_WIDTH + i] = 4278190080; // black
-            }
-        }
-        
-        if (true) {
-            
-            if (vertical_side && rayDir.getX() > 0) floorWall = Vector2d(box.getX(), box.getY() + wallX);
-            else if (vertical_side && rayDir.getX() < 0) floorWall = Vector2d(box.getX() + 1.0, box.getY() + wallX);
-            else if (!vertical_side && rayDir.getY() > 0) floorWall = Vector2d(box.getX() + wallX, box.getY());
-            else floorWall = Vector2d(box.getX() + wallX, box.getY() + 1.0);
-            
-            Uint8 c1_c;
-            Uint8 c2_c;
-            Uint8 c3_c;
-            
-            for (int y = actualWallBottom - yOffset; y < SCREEN_HEIGHT + yOffset; y++) {
-                c1_c = (y / 12);
-                c2_c = 10;
-                c3_c = (y / 10);
-                pixels[(SCREEN_HEIGHT - y + yOffset - 1) * SCREEN_WIDTH + i] = (((Uint32) c3_c) + (((Uint32) c2_c) << 8) + (((Uint32) c1_c) << 16) + (((Uint32) 255) << 24));
-            }
-
-            for (int y = wallBottom - yOffset; y < SCREEN_HEIGHT - yOffset; y++) {
-                c1_c = (((SCREEN_HEIGHT) - (2 * y)) / - 10);
-                c2_c = (((SCREEN_HEIGHT) - (2 * y)) / - 10);
-                c3_c = (((SCREEN_HEIGHT) - (2 * y)) / - 10) * 1.4;
-                pixels[(y + yOffset) * SCREEN_WIDTH + i] = (((Uint32) c3_c) + (((Uint32) c2_c) << 8) + (((Uint32) c1_c) << 16) + (((Uint32) 255) << 24));
-            }
-        }
-        zBuffer[i] = orthDistance;
-    }
+    raycaster.raycast(&player, worldMap, 2, false, false);
 }
 
 void game_loop() {
-    
     SDL_SetRelativeMouseMode(SDL_bool(trapMouse));
     
     int countFPS = 0;
@@ -509,36 +294,35 @@ void game_loop() {
             std::cout << "FPS: " << fps << std::endl;
         }
         update_screen();
-        lastPos = pos.copy();
         if (sprint) actualSpeed = movementSpeed * 5;
         else actualSpeed = movementSpeed;
         if (forward) {
-            Vector2d newPos = pos + dir.norm() * actualSpeed * frameTime;
-            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] <= 0) pos += dir.norm() * actualSpeed * frameTime;
+            Vector2d newPos = player.pos + player.dir.norm() * actualSpeed * frameTime;
+            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] <= 0) player.pos += player.dir.norm() * actualSpeed * frameTime;
             else {
                 Vector2d delta = Vector2d(0, 0);
                 // todo fungerar bara vid vinklar större än 45
-                if ((int) newPos.getX() != (int) pos.getX() && abs(dir.getY()) > abs(dir.getX())) {
-                    delta = Vector2d(0, dir.norm().getY())  * actualSpeed * frameTime;
+                if ((int) newPos.getX() != (int) player.pos.getX() && abs(player.dir.getY()) > abs(player.dir.getX())) {
+                    delta = Vector2d(0, player.dir.norm().getY())  * actualSpeed * frameTime;
                 }
-                else if ((int) newPos.getY() != (int) pos.getY()) {
-                    delta = Vector2d(dir.norm().getX(), 0)  * actualSpeed * frameTime;
+                else if ((int) newPos.getY() != (int) player.pos.getY()) {
+                    delta = Vector2d(player.dir.norm().getX(), 0)  * actualSpeed * frameTime;
                 }
-                newPos = pos + delta * 5;
-                if (worldMap[(int) newPos.getY()][(int) newPos.getX()] <= 0) pos += delta;
+                newPos = player.pos + delta * 5;
+                if (worldMap[(int) newPos.getY()][(int) newPos.getX()] <= 0) player.pos += delta;
             }
         }
         if (left) {
-            Vector2d newPos = pos + dir.rotate(-3.14159 / 2).norm() * actualSpeed * frameTime * 3;
-            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] <= 0) pos += dir.rotate(-3.14159 / 2).norm() * actualSpeed * frameTime;
+            Vector2d newPos = player.pos + player.dir.rotate(-3.14159 / 2).norm() * actualSpeed * frameTime * 3;
+            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] <= 0) player.pos += player.dir.rotate(-3.14159 / 2).norm() * actualSpeed * frameTime;
         }
         if (backward) {
-            Vector2d newPos = pos - dir.norm() * actualSpeed * frameTime * 3;
-            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] <= 0) pos -= dir.norm() * actualSpeed * frameTime;
+            Vector2d newPos = player.pos - player.dir.norm() * actualSpeed * frameTime * 3;
+            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] <= 0) player.pos -= player.dir.norm() * actualSpeed * frameTime;
         }
         if (right) {
-            Vector2d newPos = pos + dir.rotate(3.14159 / 2).norm() * actualSpeed * frameTime * 3;
-            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] <= 0) pos += dir.rotate(3.14159 / 2).norm() * actualSpeed * frameTime;
+            Vector2d newPos = player.pos + player.dir.rotate(3.14159 / 2).norm() * actualSpeed * frameTime * 3;
+            if (worldMap[(int) newPos.getY()][(int) newPos.getX()] <= 0) player.pos += player.dir.rotate(3.14159 / 2).norm() * actualSpeed * frameTime;
         }
         
         //Handle events on queue
@@ -617,8 +401,8 @@ void game_loop() {
             else if( e.type == SDL_MOUSEMOTION) {
                 int x, y;
                 SDL_GetMouseState( &x, &y );
-                dir.rotateThis(e.motion.xrel / 2000.0);
-                cam.rotateThis(e.motion.xrel / 2000.0);
+                player.dir.rotateThis(e.motion.xrel / 2000.0);
+                player.cam.rotateThis(e.motion.xrel / 2000.0);
                 yOffset -= e.motion.yrel / 2;
                 if (yOffset > maxYOffset) yOffset = maxYOffset;
                 else if (yOffset < -maxYOffset) yOffset = -maxYOffset;
@@ -694,17 +478,17 @@ void drawDogs() {
     // todo sort the sprites
     for (int i = 0; i < dogs.size(); i++) {
         Vector2d dogPos = Vector2d(dogs[i].x, dogs[i].y);
-        Vector2d newDogPos = dogPos + (pos - dogPos).norm() * 2 * frameTime;
-        if ((pos - newDogPos).mag() > 2) {
+        Vector2d newDogPos = dogPos + (player.pos - dogPos).norm() * 2 * frameTime;
+        if ((player.pos - newDogPos).mag() > 2) {
             if (worldMap[(int) newDogPos.getY()][(int) newDogPos.getX()] <= 0) {
                 dogs[i].x = newDogPos.getX();
                 dogs[i].y = newDogPos.getY();
             }
         }
         // relative distance
-        Vector2d spriteDistance = Vector2d(dogs[i].x - pos.getX(), dogs[i].y - pos.getY());
-        double inverseDeterminant = 1.0 / (cam.getX() * dir.getY() - cam.getY() * dir.getX());
-        Vector2d transformed = Vector2d(dir.getY() * spriteDistance.getX() - dir.getX() * spriteDistance.getY(), -cam.getY() * spriteDistance.getX() + cam.getX() * spriteDistance.getY());
+        Vector2d spriteDistance = Vector2d(dogs[i].x - player.pos.getX(), dogs[i].y - player.pos.getY());
+        double inverseDeterminant = 1.0 / (player.cam.getX() * player.dir.getY() - player.cam.getY() * player.dir.getX());
+        Vector2d transformed = Vector2d(player.dir.getY() * spriteDistance.getX() - player.dir.getX() * spriteDistance.getY(), -player.cam.getY() * spriteDistance.getX() + player.cam.getX() * spriteDistance.getY());
         transformed *= inverseDeterminant;
         int spriteScreenX = int((SCREEN_WIDTH / 2) * (1 + transformed.getX() / transformed.getY()));
         int spriteHeight = abs(int(SCREEN_HEIGHT / transformed.getY()));

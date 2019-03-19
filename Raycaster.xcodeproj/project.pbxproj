@@ -7,10 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		43163B5B2240FD3E00205E89 /* Raycaster.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 43163B592240FD3E00205E89 /* Raycaster.cpp */; };
+		43163B5E224101EC00205E89 /* Player.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 43163B5C224101EC00205E89 /* Player.cpp */; };
 		436CD0EF22390780003AD6C2 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 436CD0EE22390780003AD6C2 /* main.cpp */; };
 		436CD0F7223907A6003AD6C2 /* Vector2d.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 436CD0F5223907A6003AD6C2 /* Vector2d.cpp */; };
 		436CD0FC223907EA003AD6C2 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 436CD0FA223907EA003AD6C2 /* SDL2.framework */; };
 		436CD10122391B7F003AD6C2 /* Bitmaps.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 436CD10022391B7F003AD6C2 /* Bitmaps.cpp */; };
+		43C1512522411C9B00CE9411 /* global.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 43C1512422411C9B00CE9411 /* global.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -26,6 +29,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		43163B592240FD3E00205E89 /* Raycaster.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Raycaster.cpp; sourceTree = "<group>"; };
+		43163B5A2240FD3E00205E89 /* Raycaster.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Raycaster.hpp; sourceTree = "<group>"; };
+		43163B5C224101EC00205E89 /* Player.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Player.cpp; sourceTree = "<group>"; };
+		43163B5D224101EC00205E89 /* Player.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Player.hpp; sourceTree = "<group>"; };
 		436CD0EB22390780003AD6C2 /* Raycaster */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Raycaster; sourceTree = BUILT_PRODUCTS_DIR; };
 		436CD0EE22390780003AD6C2 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		436CD0F5223907A6003AD6C2 /* Vector2d.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Vector2d.cpp; sourceTree = "<group>"; };
@@ -33,6 +40,8 @@
 		436CD0F9223907EA003AD6C2 /* SDL2_image.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_image.framework; path = ../../../../Library/Frameworks/SDL2_image.framework; sourceTree = "<group>"; };
 		436CD0FA223907EA003AD6C2 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = ../../../../Library/Frameworks/SDL2.framework; sourceTree = "<group>"; };
 		436CD10022391B7F003AD6C2 /* Bitmaps.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Bitmaps.cpp; sourceTree = "<group>"; };
+		43C1512222411B7300CE9411 /* global.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = global.hpp; sourceTree = "<group>"; };
+		43C1512422411C9B00CE9411 /* global.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = global.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,6 +80,12 @@
 				436CD0F5223907A6003AD6C2 /* Vector2d.cpp */,
 				436CD0F6223907A6003AD6C2 /* Vector2d.hpp */,
 				436CD10022391B7F003AD6C2 /* Bitmaps.cpp */,
+				43163B592240FD3E00205E89 /* Raycaster.cpp */,
+				43163B5A2240FD3E00205E89 /* Raycaster.hpp */,
+				43163B5C224101EC00205E89 /* Player.cpp */,
+				43163B5D224101EC00205E89 /* Player.hpp */,
+				43C1512222411B7300CE9411 /* global.hpp */,
+				43C1512422411C9B00CE9411 /* global.cpp */,
 			);
 			path = Raycaster;
 			sourceTree = "<group>";
@@ -140,9 +155,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				43163B5B2240FD3E00205E89 /* Raycaster.cpp in Sources */,
 				436CD0F7223907A6003AD6C2 /* Vector2d.cpp in Sources */,
+				43C1512522411C9B00CE9411 /* global.cpp in Sources */,
 				436CD0EF22390780003AD6C2 /* main.cpp in Sources */,
 				436CD10122391B7F003AD6C2 /* Bitmaps.cpp in Sources */,
+				43163B5E224101EC00205E89 /* Player.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
