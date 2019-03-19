@@ -132,7 +132,7 @@ void clear_screen();
 
 void animate_gun();
 
-void drawDogs();
+void drawDogs(Player *player);
 
 //The window we'll be rendering to
 SDL_Window* window = NULL;
@@ -182,17 +182,17 @@ std::vector<Dog> dogs = {};
 
 bool init() {
     
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 64; i++) {
         Dog d;
-        d.x = rand() % 20 + 1;
-        d.y = rand() % 50 + 1;
+        d.x = rand() % 30 + 1;
+        d.y = rand() % 90 + 1;
         dogs.push_back(d);
     }
     
     textureRenderSize.x = 0;
     textureRenderSize.y = 0;
-    textureRenderSize.w = SCREEN_WIDTH * 2;
-    textureRenderSize.h = SCREEN_HEIGHT * 2;
+    textureRenderSize.w = SCREEN_WIDTH * 3;
+    textureRenderSize.h = SCREEN_HEIGHT * 3;
     
     //Initialization flag
     bool success = true;
@@ -207,7 +207,7 @@ bool init() {
             printf( "Warning: Linear texture filtering not enabled!" );
         }
         //Create window
-        window = SDL_CreateWindow( "RAYCASTER", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH * 2, SCREEN_HEIGHT * 2 + 120, SDL_WINDOW_SHOWN );
+        window = SDL_CreateWindow( "RAYCASTER", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH * 3, SCREEN_HEIGHT * 3 + 60, SDL_WINDOW_SHOWN );
         if (fullscreen) SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
         if( window == NULL ) {
             printf( "Window could not be created! SDL Error: %s\n", SDL_GetError() );
@@ -264,10 +264,6 @@ int main( int argc, char* args[] ) {
     return 0;
 }
 
-void raycast() {
-    raycaster.raycast(&player, worldMap, 2, false, false);
-}
-
 void game_loop() {
     SDL_SetRelativeMouseMode(SDL_bool(trapMouse));
     
@@ -279,8 +275,8 @@ void game_loop() {
         
         SDL_LockTexture(texture, NULL,(void**) &pixels, &pitch);
         
-        raycast();
-        drawDogs();
+        raycaster.raycast(&player, worldMap, 2, false, false);
+        drawDogs(&player);
         animate_gun();
         pixels[SCREEN_WIDTH * SCREEN_HEIGHT / 2 + SCREEN_WIDTH / 2] = 255 << 8; // reticle
         
@@ -474,21 +470,24 @@ void animate_gun() {
     }
 }
 
-void drawDogs() {
+void drawDogs(Player *player) {
     // todo sort the sprites
+    Vector2d pos = player -> pos;
+    Vector2d dir = player -> dir;
+    Vector2d cam = player -> cam;
     for (int i = 0; i < dogs.size(); i++) {
         Vector2d dogPos = Vector2d(dogs[i].x, dogs[i].y);
-        Vector2d newDogPos = dogPos + (player.pos - dogPos).norm() * 2 * frameTime;
-        if ((player.pos - newDogPos).mag() > 2) {
+        Vector2d newDogPos = dogPos + (pos - dogPos).norm() * 2 * frameTime;
+        if ((pos - newDogPos).mag() > 2) {
             if (worldMap[(int) newDogPos.getY()][(int) newDogPos.getX()] <= 0) {
                 dogs[i].x = newDogPos.getX();
                 dogs[i].y = newDogPos.getY();
             }
         }
         // relative distance
-        Vector2d spriteDistance = Vector2d(dogs[i].x - player.pos.getX(), dogs[i].y - player.pos.getY());
-        double inverseDeterminant = 1.0 / (player.cam.getX() * player.dir.getY() - player.cam.getY() * player.dir.getX());
-        Vector2d transformed = Vector2d(player.dir.getY() * spriteDistance.getX() - player.dir.getX() * spriteDistance.getY(), -player.cam.getY() * spriteDistance.getX() + player.cam.getX() * spriteDistance.getY());
+        Vector2d spriteDistance = Vector2d(dogs[i].x - pos.getX(), dogs[i].y - pos.getY());
+        double inverseDeterminant = 1.0 / (cam.getX() * dir.getY() - cam.getY() * dir.getX());
+        Vector2d transformed = Vector2d(dir.getY() * spriteDistance.getX() - dir.getX() * spriteDistance.getY(), -cam.getY() * spriteDistance.getX() + cam.getX() * spriteDistance.getY());
         transformed *= inverseDeterminant;
         int spriteScreenX = int((SCREEN_WIDTH / 2) * (1 + transformed.getX() / transformed.getY()));
         int spriteHeight = abs(int(SCREEN_HEIGHT / transformed.getY()));
@@ -518,14 +517,17 @@ void drawDogs() {
                         c1 = c1 << 4;
                         c2 = c2 << 4;
                         c3 = c3 << 4;
-                        c1 -= c1 * transformed.getY() / 31;
-                        c2 -= c2 * transformed.getY() / 31;
-                        c3 -= c3 * transformed.getY() / 31;
-                        int r = abs((x - SCREEN_WIDTH / 2)) + abs((y + yOffset - SCREEN_HEIGHT / 2)) + 25;
-                        c1 = ((int) c1) * 50 / r;
-                        c2 = ((int) c2) * 50 / r;
-                        c3 = ((int) c3) * 50 / r;
-                        pixels[(y + yOffset + spriteHeight / 2) * SCREEN_WIDTH + x] = (((Uint32) c3) + (((Uint32) c2) << 8) + (((Uint32) c1) << 16) + (((Uint32) 255) << 24)); // todo krashar här
+                        c1 -= c1 * transformed.getY() / (viewDistance + 1);
+                        c2 -= c2 * transformed.getY() / (viewDistance + 1);
+                        c3 -= c3 * transformed.getY() / (viewDistance + 1);
+                        //int r = sqrt((float)(i - SCREEN_WIDTH / 2) * (i - SCREEN_WIDTH / 2) + (y + yOffset - SCREEN_HEIGHT / 2) * (y + yOffset - SCREEN_HEIGHT / 2));
+                        int r = abs((x - SCREEN_WIDTH / 2)) + abs((y + yOffset + spriteHeight / 2 - SCREEN_HEIGHT / 2)) + 10;
+                        if (r < 8) r = 8;
+                        c1 = ((int) c1) * 8 / r;
+                        c2 = ((int) c2) * 8 / r;
+                        c3 = ((int) c3) * 8 / r;
+                        int index = (y + yOffset + spriteHeight / 2) * SCREEN_WIDTH + x;
+                        if (index > 0 && index < SCREEN_WIDTH * SCREEN_HEIGHT) pixels[index] = (((Uint32) c3) + (((Uint32) c2) << 8) + (((Uint32) c1) << 16) + (((Uint32) 255) << 24)); // todo krashar här
                     }
                 }
             }
@@ -538,7 +540,7 @@ void update_screen() {
     clear_screen();
     //SDL_UpdateTexture(texture, NULL, pixels, SCREEN_WIDTH * sizeof(Uint32));
     SDL_RenderCopy(renderer, texture, NULL, &textureRenderSize);
-    SDL_RenderPresent( renderer );
+    SDL_RenderPresent(renderer);
 }
 
 void clear_screen() {

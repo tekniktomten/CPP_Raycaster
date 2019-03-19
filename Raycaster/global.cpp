@@ -8,3 +8,5 @@ int yOffset = 0;
 int maxYOffset = SCREEN_HEIGHT * 0.4;
 
 int pitch = SCREEN_WIDTH * sizeof(Uint32);
+
+int viewDistance = 20;

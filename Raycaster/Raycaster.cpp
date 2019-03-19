@@ -12,7 +12,6 @@ void Raycaster::raycast(Player *player, int worldMap[96][32], int wallHeightMult
     wallH = wallHeightMultiplier;
     int textureWidth = 128;
     int textureHeight = 128 * wallH;
-    int zBuffer[SCREEN_WIDTH]; // TODO
     for (int i = 0; i < SCREEN_WIDTH; i++) {
         
         box = Vector2d((int) pos.getX(), (int) pos.getY());
@@ -56,18 +55,11 @@ void Raycaster::raycast(Player *player, int worldMap[96][32], int wallHeightMult
             if (worldMap[(int) box.getY()][(int) box.getX()] > 0) {
                 hit = worldMap[(int) box.getY()][(int) box.getX()];
             }
-            else if (orthDistance > 30) {
+            else if (orthDistance > viewDistance) {
                 tooFar = true;
                 break;
             }
         }
-        
-        /*
-         if (vertical_side) {
-         orthDistance = (box.getX() - pos.getX() + (1.0 - step.getX()) / 2.0) / rayDir.getX();
-         } else {
-         orthDistance = (box.getY() - pos.getY() + (1.0 - step.getY()) / 2.0) / rayDir.getY();
-         }*/
         
         // this can be hardcoded if tooFar
         wallHeight = (int) (SCREEN_HEIGHT / orthDistance) * wallH;
@@ -150,15 +142,16 @@ void Raycaster::raycast(Player *player, int worldMap[96][32], int wallHeightMult
                         c3 = c3 << 3;
                     }
                     
-                    c1 -= c1 * orthDistance / 31;
-                    c2 -= c2 * orthDistance / 31;
-                    c3 -= c3 * orthDistance / 31;
+                    c1 -= c1 * orthDistance / (viewDistance + 1);
+                    c2 -= c2 * orthDistance / (viewDistance + 1);
+                    c3 -= c3 * orthDistance / (viewDistance + 1);
                     
-                    //int r = std::sqrt((float)(i - SCREEN_WIDTH / 2) * (i - SCREEN_WIDTH / 2) + (y + yOffset - SCREEN_HEIGHT / 2) * (y + yOffset - SCREEN_HEIGHT / 2)) + 25;
-                    int r = abs((i - SCREEN_WIDTH / 2)) + abs((y + yOffset - SCREEN_HEIGHT / 2)) + 25;
-                    c1 = ((int) c1) * 50 / r;
-                    c2 = ((int) c2) * 50 / r;
-                    c3 = ((int) c3) * 50 / r;
+                    int r = sqrt((float)(i - SCREEN_WIDTH / 2) * (i - SCREEN_WIDTH / 2) + (y + yOffset - SCREEN_HEIGHT / 2) * (y + yOffset - SCREEN_HEIGHT / 2));
+                    //int r = abs((i - SCREEN_WIDTH / 2)) + abs((y + yOffset - SCREEN_HEIGHT / 2));
+                    if (r < 8) r = 8;
+                    c1 = ((int) c1) * 8 / r;
+                    c2 = ((int) c2) * 8 / r;
+                    c3 = ((int) c3) * 8 / r;
                     
                     pixels[(y + yOffset) * SCREEN_WIDTH + i] = (((Uint32) c3) + (((Uint32) c2) << 8) + (((Uint32) c1) << 16) + (((Uint32) 255) << 24));
                 } else pixels[(y + yOffset) * SCREEN_WIDTH + i] = 4278190080; // black
