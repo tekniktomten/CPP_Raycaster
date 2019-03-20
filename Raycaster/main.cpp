@@ -148,6 +148,8 @@ Player player = Player();
 
 Raycaster raycaster = Raycaster(pixels, &player);
 
+Vector2d hitscan;
+
 bool trapMouse = true;
 
 double t = 0;
@@ -399,12 +401,16 @@ void game_loop() {
                 else if (yOffset < -maxYOffset) yOffset = -maxYOffset;
             }
             
-            else if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP) {
-                gunSprite = 1;
-                shooting = true;
-                shootTime = SDL_GetTicks();
+            else if (e.type == SDL_MOUSEBUTTONDOWN) {
+                if (!shooting) {
+                    hitscan = Vector2d(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+                    gunSprite = 1;
+                    shooting = true;
+                    shootTime = SDL_GetTicks();
+                }
             }
         }
+        
         lastTime = t;
         t = SDL_GetTicks();
         frameTime = (t - lastTime) / 1000.0;
@@ -433,6 +439,7 @@ void animate_gun() {
                 c = pistol_ready[i];
                 break;
             case 1:
+                hitscan = Vector2d();
                 c = pistol_atk1[i];
                 break;
             case 2:
@@ -481,8 +488,8 @@ void drawDogs(Player *player) {
     Vector2d cam = player -> cam;
     for (int i = 0; i < dogs.size(); i++) {
         Vector2d dogPos = Vector2d(dogs[i].x, dogs[i].y);
-        Vector2d newDogPos = dogPos + (pos - dogPos).norm() * 2 * frameTime;
-        if ((pos - newDogPos).mag() > 2) {
+        Vector2d newDogPos = dogPos + (pos - dogPos).norm() * 3 * frameTime;
+        if ((pos - newDogPos).mag() > 1.6) {
             if (worldMap[(int) newDogPos.getY()][(int) newDogPos.getX()] <= 0) {
                 dogs[i].x = newDogPos.getX();
                 dogs[i].y = newDogPos.getY();
@@ -524,12 +531,15 @@ void drawDogs(Player *player) {
                         c1 -= c1 * transformed.getY() / (viewDistance + 1);
                         c2 -= c2 * transformed.getY() / (viewDistance + 1);
                         c3 -= c3 * transformed.getY() / (viewDistance + 1);
-                        //int r = sqrt((float)(i - SCREEN_WIDTH / 2) * (i - SCREEN_WIDTH / 2) + (y + yOffset - SCREEN_HEIGHT / 2) * (y + yOffset - SCREEN_HEIGHT / 2));
-                        int r = abs((x - SCREEN_WIDTH / 2)) + abs((y + yOffset + spriteHeight / 2 - SCREEN_HEIGHT / 2)) + 10;
-                        if (r < 8) r = 8;
-                        c1 = ((int) c1) * 8 / r;
-                        c2 = ((int) c2) * 8 / r;
-                        c3 = ((int) c3) * 8 / r;
+                        int r = sqrt((float)(x - SCREEN_WIDTH / 2) * (x - SCREEN_WIDTH / 2) + (y + yOffset + spriteHeight / 2 - SCREEN_HEIGHT / 2) * (y + yOffset + spriteHeight / 2 - SCREEN_HEIGHT / 2));
+                        //int r = abs((i - SCREEN_WIDTH / 2)) + abs((y + yOffset - SCREEN_HEIGHT / 2));
+                        if (r < 30) r = 30;
+                        c1 = ((int) c1) * 30 / r;
+                        c2 = ((int) c2) * 30 / r;
+                        c3 = ((int) c3) * 30 / r;
+                        if (y + yOffset + spriteHeight / 2 == hitscan.getY() && x == hitscan.getX()) {
+                            dogs.erase(dogs.begin() + i);
+                        }
                         int index = (y + yOffset + spriteHeight / 2) * SCREEN_WIDTH + x;
                         if (index > 0 && index < SCREEN_WIDTH * SCREEN_HEIGHT) pixels[index] = (((Uint32) c3) + (((Uint32) c2) << 8) + (((Uint32) c1) << 16) + (((Uint32) 255) << 24)); // todo krashar här
                     }

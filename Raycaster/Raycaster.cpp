@@ -148,10 +148,10 @@ void Raycaster::raycast(Player *player, int worldMap[96][32], int wallHeightMult
                     
                     int r = sqrt((float)(i - SCREEN_WIDTH / 2) * (i - SCREEN_WIDTH / 2) + (y + yOffset - SCREEN_HEIGHT / 2) * (y + yOffset - SCREEN_HEIGHT / 2));
                     //int r = abs((i - SCREEN_WIDTH / 2)) + abs((y + yOffset - SCREEN_HEIGHT / 2));
-                    if (r < 8) r = 8;
-                    c1 = ((int) c1) * 8 / r;
-                    c2 = ((int) c2) * 8 / r;
-                    c3 = ((int) c3) * 8 / r;
+                    if (r < 30) r = 30;
+                    c1 = ((int) c1) * 30 / r;
+                    c2 = ((int) c2) * 30 / r;
+                    c3 = ((int) c3) * 30 / r;
                     
                     pixels[(y + yOffset) * SCREEN_WIDTH + i] = (((Uint32) c3) + (((Uint32) c2) << 8) + (((Uint32) c1) << 16) + (((Uint32) 255) << 24));
                 } else pixels[(y + yOffset) * SCREEN_WIDTH + i] = 4278190080; // black
