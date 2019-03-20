@@ -79,7 +79,6 @@ void Raycaster::raycast(Player *player, int worldMap[96][32], int wallHeightMult
         wallTop += yOffset;
         wallBottom += yOffset;
         
-        int actualWallTop = wallTop;
         int actualWallBottom = wallBottom;
         
         if (wallTop < 0) wallTop = 0;
@@ -92,7 +91,7 @@ void Raycaster::raycast(Player *player, int worldMap[96][32], int wallHeightMult
          SDL_RenderDrawLine(renderer, i, wallTop, i, wallBottom);
          } else {*/
         
-        if (true) {
+        if (true) { // todo why?
             
             Uint8 c1;
             Uint8 c2;
@@ -176,12 +175,45 @@ void Raycaster::raycast(Player *player, int worldMap[96][32], int wallHeightMult
                 pixels[(SCREEN_HEIGHT - y + yOffset - 1) * SCREEN_WIDTH + i] = (((Uint32) c3_c) + (((Uint32) c2_c) << 8) + (((Uint32) c1_c) << 16) + (((Uint32) 255) << 24));
             }
             
-            for (int y = wallBottom - yOffset; y < SCREEN_HEIGHT - yOffset; y++) {
+            tooFar = false;
+            for (int y = SCREEN_HEIGHT - yOffset; y > wallBottom - yOffset; y--) {
+                double currentDistance = SCREEN_HEIGHT / (2.0 * y - SCREEN_HEIGHT);
+                if (currentDistance > viewDistance) tooFar = true;
+                if (!tooFar) {
+                    double weight = (currentDistance * wallH) / (orthDistance);
+                    Vector2d currentFloor = Vector2d(weight * floorWall.getX() + (1.0 - weight) * pos.getX(), weight * floorWall.getY() + (1.0 - weight) * pos.getY());
+                    if (worldMap[(int) currentFloor.getY()][(int) currentFloor.getX()] < 1) {
+                        Vector2d floorTexture = Vector2d((int) (currentFloor.getX() * textureWidth / 2) % textureWidth, (int) (currentFloor.getY() * textureHeight / 4) % textureHeight);
+                        Uint16 color_ceiling = ice2[int(textureWidth * floorTexture.getY() + floorTexture.getX())];
+                        Uint8 c1_c = (Uint8) (color_ceiling >> 8);
+                        Uint8 c2_c = (Uint8) (color_ceiling >> 4) & 0x0f;
+                        Uint8 c3_c = ((Uint8) (color_ceiling) << 4);
+                        c3_c = c3_c >> 4; // todo
+                        c1_c = c1_c << 4;
+                        c2_c = c2_c << 4;
+                        c3_c = c3_c << 4;
+                        
+                        c1_c -= c1_c * currentDistance / (viewDistance + 1);
+                        c2_c -= c2_c * currentDistance / (viewDistance + 1);
+                        c3_c -= c3_c * currentDistance / (viewDistance + 1);
+                        
+                        //int r = sqrt((float)(i - SCREEN_WIDTH / 2) * (i - SCREEN_WIDTH / 2) + (y + yOffset - SCREEN_HEIGHT / 2) * (y + yOffset - SCREEN_HEIGHT / 2));
+                        int r = abs((i - SCREEN_WIDTH / 2)) + abs((y + yOffset - SCREEN_HEIGHT / 2));
+                        if (r < 30) r = 30;
+                        c1_c = ((int) c1_c) * 30 / r;
+                        c2_c = ((int) c2_c) * 30 / r;
+                        c3_c = ((int) c3_c) * 30 / r;
+                        pixels[(y + yOffset) * SCREEN_WIDTH + i] = (((Uint32) c3_c) + (((Uint32) c2_c) << 8) + (((Uint32) c1_c) << 16) + (((Uint32) 255) << 24));
+                    } else pixels[(y + yOffset) * SCREEN_WIDTH + i] = 4278190080; // black
+                }
+            }
+            
+            /*for (int y = wallBottom - yOffset; y < SCREEN_HEIGHT - yOffset; y++) {
                 c1_c = (((SCREEN_HEIGHT) - (2 * y)) / - 10);
                 c2_c = (((SCREEN_HEIGHT) - (2 * y)) / - 10);
                 c3_c = (((SCREEN_HEIGHT) - (2 * y)) / - 10) * 1.4;
                 pixels[(y + yOffset) * SCREEN_WIDTH + i] = (((Uint32) c3_c) + (((Uint32) c2_c) << 8) + (((Uint32) c1_c) << 16) + (((Uint32) 255) << 24));
-            }
+            }*/
         }
         zBuffer[i] = orthDistance;
     }

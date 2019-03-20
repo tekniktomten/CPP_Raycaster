@@ -425,7 +425,7 @@ void game_loop() {
 
 void animate_gun() {
     Uint32 c;
-    if (SDL_GetTicks() > shootTime + 100 && shooting) {
+    if (SDL_GetTicks() > shootTime + 90 && shooting) {
         gunSprite++;
         shootTime = SDL_GetTicks();
     }
@@ -531,8 +531,8 @@ void drawDogs(Player *player) {
                         c1 -= c1 * transformed.getY() / (viewDistance + 1);
                         c2 -= c2 * transformed.getY() / (viewDistance + 1);
                         c3 -= c3 * transformed.getY() / (viewDistance + 1);
-                        int r = sqrt((float)(x - SCREEN_WIDTH / 2) * (x - SCREEN_WIDTH / 2) + (y + yOffset + spriteHeight / 2 - SCREEN_HEIGHT / 2) * (y + yOffset + spriteHeight / 2 - SCREEN_HEIGHT / 2));
-                        //int r = abs((i - SCREEN_WIDTH / 2)) + abs((y + yOffset - SCREEN_HEIGHT / 2));
+                        //int r = sqrt((float)(x - SCREEN_WIDTH / 2) * (x - SCREEN_WIDTH / 2) + (y + yOffset + spriteHeight / 2 - SCREEN_HEIGHT / 2) * (y + yOffset + spriteHeight / 2 - SCREEN_HEIGHT / 2));
+                        int r = abs((x - SCREEN_WIDTH / 2)) + abs((y + yOffset - SCREEN_HEIGHT / 2 + spriteHeight / 2));
                         if (r < 30) r = 30;
                         c1 = ((int) c1) * 30 / r;
                         c2 = ((int) c2) * 30 / r;
