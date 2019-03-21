@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 #include "Vector2d.hpp"
 #include "Player.hpp"
+#include "global.hpp"
 
 class Raycaster {
 private:
@@ -28,7 +29,7 @@ private:
     Vector2d floorWall;
 public:
     Raycaster(Uint32 *pixelArray, Player *player);
-    void raycast(Player *player, int map[96][32], int wallHeightMultiplier, bool floor, bool ceiling);
+    void raycast(Player *player, int (*worldMap)[mapHeight][mapWidth], int wallHeightMultiplier, bool floor, bool ceiling);
 };
 
 #endif /* Raycaster_hpp */

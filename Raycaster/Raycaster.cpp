@@ -5,7 +5,7 @@
 Raycaster::Raycaster(Uint32 *pixelArray, Player *player) {
     
 }
-void Raycaster::raycast(Player *player, int worldMap[96][32], int wallHeightMultiplier, bool renderFloor, bool rederCeiling) {
+void Raycaster::raycast(Player *player, int (*worldMap)[mapHeight][mapWidth], int wallHeightMultiplier, bool renderFloor, bool rederCeiling) {
     pos = player -> pos;
     dir = player -> dir;
     cam = player -> cam;
@@ -52,8 +52,8 @@ void Raycaster::raycast(Player *player, int worldMap[96][32], int wallHeightMult
                 vertical_side = false;
                 orthDistance = (box.getY() - pos.getY() + (1.0 - step.getY()) / 2.0) / rayDir.getY();
             }
-            if (worldMap[(int) box.getY()][(int) box.getX()] > 0) {
-                hit = worldMap[(int) box.getY()][(int) box.getX()];
+            if ((*worldMap)[(int) box.getY()][(int) box.getX()] > 0) {
+                hit = (*worldMap)[(int) box.getY()][(int) box.getX()];
             }
             else if (orthDistance > viewDistance) {
                 tooFar = true;
@@ -176,14 +176,15 @@ void Raycaster::raycast(Player *player, int worldMap[96][32], int wallHeightMult
             }
             
             tooFar = false;
+            Vector2d currentFloor;
             for (int y = SCREEN_HEIGHT - yOffset; y > wallBottom - yOffset; y--) {
                 if ((y + yOffset) * SCREEN_WIDTH + i > 0 && (y + yOffset) * SCREEN_WIDTH + i < SCREEN_HEIGHT * SCREEN_WIDTH) { // todo prevents crashes
                     double currentDistance = SCREEN_HEIGHT / (2.0 * y - SCREEN_HEIGHT);
                     if (currentDistance > viewDistance) tooFar = true;
                     if (!tooFar) {
                         double weight = (currentDistance * wallH) / (orthDistance);
-                        Vector2d currentFloor = Vector2d(weight * floorWall.getX() + (1.0 - weight) * pos.getX(), weight * floorWall.getY() + (1.0 - weight) * pos.getY());
-                        if (worldMap[(int) currentFloor.getY()][(int) currentFloor.getX()] < 1) {
+                        currentFloor = Vector2d(weight * floorWall.getX() + (1.0 - weight) * pos.getX(), weight * floorWall.getY() + (1.0 - weight) * pos.getY());
+                        if ((*worldMap)[(int) currentFloor.getY()][(int) currentFloor.getX()] < 1) {
                             Vector2d floorTexture = Vector2d((int) (currentFloor.getX() * textureWidth / 2) % textureWidth, (int) (currentFloor.getY() * textureHeight / 4) % textureHeight);
                             Uint16 color_ceiling = ice2[int(textureWidth * floorTexture.getY() + floorTexture.getX())];
                             Uint8 c1_c = (Uint8) (color_ceiling >> 8);
@@ -206,6 +207,10 @@ void Raycaster::raycast(Player *player, int worldMap[96][32], int wallHeightMult
                             c3_c = ((int) c3_c) * 30 / r;
                             pixels[(y + yOffset) * SCREEN_WIDTH + i] = (((Uint32) c3_c) + (((Uint32) c2_c) << 8) + (((Uint32) c1_c) << 16) + (((Uint32) 255) << 24));
                         } else pixels[(y + yOffset) * SCREEN_WIDTH + i] = 4278190080; // black
+                    }
+                    if (createMode && createWall > 0 && i == SCREEN_WIDTH / 2 && y + yOffset == SCREEN_HEIGHT / 2) {
+                        (*worldMap)[(int) currentFloor.getY()][(int) currentFloor.getX()] = createWall;
+                        createWall = 0;
                     }
                 }
             }

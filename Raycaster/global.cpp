@@ -10,3 +10,8 @@ int maxYOffset = SCREEN_HEIGHT * 0.4;
 int pitch = SCREEN_WIDTH * sizeof(Uint32);
 
 int viewDistance = 20;
+
+bool createMode = false;
+int createWall = 0;
+
+int (*activeMap)[mapHeight][mapWidth] = NULL;
