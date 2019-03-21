@@ -511,7 +511,27 @@ void game_loop() {
                         }
                         break;
                     case SDL_BUTTON_RIGHT:
-                        createWall = chosenWall;
+                        if (createMode) createWall = chosenWall;
+                        else {
+                            player.dir = player.dir * 2;
+                            viewDistance /= 2;
+                            yOffset *= 2;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+                
+            }
+            
+            else if (e.type == SDL_MOUSEBUTTONUP) {
+                switch (e.button.button) {
+                    case SDL_BUTTON_LEFT:
+                        break;
+                    case SDL_BUTTON_RIGHT:
+                        player.dir = player.dir * 0.5;
+                        viewDistance *= 2;
+                        yOffset /= 2;
                         break;
                     default:
                         break;
