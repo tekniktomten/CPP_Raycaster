@@ -378,7 +378,7 @@ void game_loop() {
         if (!pause) {
             SDL_LockTexture(texture, NULL,(void**) &pixels, &pitch);
             
-            raycaster.raycast(&player, activeMap, 2, false, false);
+            raycaster.raycast(&player, activeMap, 1, false, false);
             drawDogs(&player);
             animate_gun();
             pixels[SCREEN_WIDTH * SCREEN_HEIGHT / 2 + SCREEN_WIDTH / 2] = 255 << 8; // reticle
@@ -670,10 +670,10 @@ void drawDogs(Player *player) {
                         c1 = ((int) c1) * 30 / r;
                         c2 = ((int) c2) * 30 / r;
                         c3 = ((int) c3) * 30 / r;
-                        if (y + yOffset + spriteHeight / 2 == hitscan.getY() && x == hitscan.getX()) {
+                        if (y + yOffset == hitscan.getY() && x == hitscan.getX()) {
                             dogs.erase(dogs.begin() + i);
                         }
-                        int index = (y + yOffset + spriteHeight / 2) * SCREEN_WIDTH + x;
+                        int index = (y + yOffset) * SCREEN_WIDTH + x;
                         if (index > 0 && index < SCREEN_WIDTH * SCREEN_HEIGHT) pixels[index] = (((Uint32) c3) + (((Uint32) c2) << 8) + (((Uint32) c1) << 16) + (((Uint32) 255) << 24)); // todo krashar här
                     }
                 }

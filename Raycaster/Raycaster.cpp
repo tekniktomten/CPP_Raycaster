@@ -106,7 +106,7 @@ void Raycaster::raycast(Player *player, int (*worldMap)[mapHeight][mapWidth], in
                     int d = y * 256 + (wallHeight - SCREEN_HEIGHT) * 128;
                     int textureY = ((d * textureHeight) / wallHeight) / 256;
                     
-                    if (textureWidth * textureY + textureX > textureWidth * textureHeight || textureWidth * textureY + textureX < 0) break; // prevents crashes
+                    //if (textureWidth * textureY + textureX > textureWidth * textureHeight || textureWidth * textureY + textureX < 0) break; // this was stupid todo
                     switch (hit) {
                         case 1: {
                             color = ice[textureWidth * textureY + textureX];
@@ -185,8 +185,9 @@ void Raycaster::raycast(Player *player, int (*worldMap)[mapHeight][mapWidth], in
                         double weight = (currentDistance * wallH) / (orthDistance);
                         currentFloor = Vector2d(weight * floorWall.getX() + (1.0 - weight) * pos.getX(), weight * floorWall.getY() + (1.0 - weight) * pos.getY());
                         if ((*worldMap)[(int) currentFloor.getY()][(int) currentFloor.getX()] < 1) {
-                            Vector2d floorTexture = Vector2d((int) (currentFloor.getX() * textureWidth / 2) % textureWidth, (int) (currentFloor.getY() * textureHeight / 4) % textureHeight);
-                            Uint16 color_ceiling = ice2[int(textureWidth * floorTexture.getY() + floorTexture.getX())];
+                            Vector2d floorTexture = Vector2d((int) (currentFloor.getX() * 64 * 2) % 64, (int) (currentFloor.getY() * 64) % 32); // TODO change 64 to texture dimensions, 2 scalear
+                            // TODO vrf % 32???
+                            Uint16 color_ceiling = tileFloor[int(textureWidth * floorTexture.getY() + floorTexture.getX())];
                             Uint8 c1_c = (Uint8) (color_ceiling >> 8);
                             Uint8 c2_c = (Uint8) (color_ceiling >> 4) & 0x0f;
                             Uint8 c3_c = ((Uint8) (color_ceiling) << 4);
