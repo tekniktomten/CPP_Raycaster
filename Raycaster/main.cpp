@@ -623,13 +623,15 @@ void animate_gun() {
 
 void drawDogs(Player *player) {
     // bubble sort, closest in the end of the vector, TODO optimize
-    bool sorted = false;
-    while(!sorted) {
-        sorted = true;
-        for (int i = 0; i < dogs.size() - 1; i++) {
-            if (dogs[i].x * dogs[i].x + dogs[i].y * dogs[i].y > dogs[i + 1].x * dogs[i + 1].x + dogs[i + 1].y * dogs[i + 1].y) {
-                std::swap(dogs[i], dogs[i + 1]);
-                sorted = false;
+    if (dogs.size() > 1) {
+        bool sorted = false;
+        while(!sorted) {
+            sorted = true;
+            for (int i = 0; i < dogs.size() - 1; i++) {
+                if (dogs[i].x * dogs[i].x + dogs[i].y * dogs[i].y > dogs[i + 1].x * dogs[i + 1].x + dogs[i + 1].y * dogs[i + 1].y) {
+                    std::swap(dogs[i], dogs[i + 1]);
+                    sorted = false;
+                }
             }
         }
     }
@@ -664,8 +666,7 @@ void drawDogs(Player *player) {
         if (drawEndX > SCREEN_WIDTH) drawEndX = SCREEN_WIDTH;
         for (int x = drawStartX; x < drawEndX; x++) {
             int texX = int(256 * (x - (-spriteWidth / 2 + spriteScreenX)) * 64 / spriteWidth) / 256;
-            // todo 0.1 eller 0?
-            if (transformed.getY() > 0.1 && x > 0 && x < SCREEN_WIDTH && transformed.getY() < zBuffer[x]) {
+            if (transformed.getY() > 0 && x > 0 && x < SCREEN_WIDTH && transformed.getY() < zBuffer[x]) {
                 for (int y = drawStartY; y < drawEndY; y++) {
                     int d = y * 256 - SCREEN_HEIGHT * 128 + spriteHeight * 128;
                     int texY = ((d * 64) / spriteHeight) / 256;
