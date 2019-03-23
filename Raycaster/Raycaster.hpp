@@ -30,6 +30,7 @@ private:
 public:
     Raycaster(Uint32 *pixelArray, Player *player);
     void raycast(Player *player, int (*worldMap)[mapHeight][mapWidth], int wallHeightMultiplier, bool floor, bool ceiling);
+    Uint32 argb4444_to_argb8888(Uint16 color, bool dark, bool flashlight, int x, int y, double distance);
 };
 
 #endif /* Raycaster_hpp */

@@ -93,10 +93,6 @@ void Raycaster::raycast(Player *player, int (*worldMap)[mapHeight][mapWidth], in
         
         if (true) { // todo why?
             
-            Uint8 c1;
-            Uint8 c2;
-            Uint8 c3;
-            
             Uint16 color;
             
             for (int y = wallTop - yOffset; y <= wallBottom - yOffset; y++) {
@@ -125,29 +121,7 @@ void Raycaster::raycast(Player *player, int (*worldMap)[mapHeight][mapWidth], in
                             break;
                         }
                     }
-                    
-                    c1 = (Uint8) (color >> 8);
-                    c2 = (Uint8) (color >> 4) & 0x0f;
-                    c3 = ((Uint8) (color) << 4);
-                    c3 = c3 >> 4; // todo
-                    
-                    if (!vertical_side) {
-                        c1 = c1 << 4;
-                        c2 = c2 << 4;
-                        c3 = c3 << 4;
-                    } else {
-                        c1 = c1 << 3;
-                        c2 = c2 << 3;
-                        c3 = c3 << 3;
-                    }
-                    
-                    c1 -= c1 * orthDistance / (viewDistance + 1);
-                    c2 -= c2 * orthDistance / (viewDistance + 1);
-                    c3 -= c3 * orthDistance / (viewDistance + 1);
-                    
-                    flashLight(i, y, &c1, &c2, &c3, true);
-                    
-                    pixels[(y + yOffset) * SCREEN_WIDTH + i] = (((Uint32) c3) + (((Uint32) c2) << 8) + (((Uint32) c1) << 16) + (((Uint32) 255) << 24));
+                    pixels[(y + yOffset) * SCREEN_WIDTH + i] = argb4444_to_argb8888(color, vertical_side, false, i, y, orthDistance);
                 } else pixels[(y + yOffset) * SCREEN_WIDTH + i] = 4278190080; // black
             }
         }
@@ -159,20 +133,20 @@ void Raycaster::raycast(Player *player, int (*worldMap)[mapHeight][mapWidth], in
             else if (!vertical_side && rayDir.getY() > 0) floorWall = Vector2d(box.getX() + wallX, box.getY());
             else floorWall = Vector2d(box.getX() + wallX, box.getY() + 1.0);
             
-            Uint8 c1_c;
-            Uint8 c2_c;
-            Uint8 c3_c;
-            
-            for (int y = actualWallBottom - yOffset; y < SCREEN_HEIGHT + yOffset; y++) {
+            /*for (int y = actualWallBottom - yOffset; y < SCREEN_HEIGHT + yOffset; y++) {
                 c1_c = (y / 12);
                 c2_c = 10;
                 c3_c = (y / 10);
                 pixels[(SCREEN_HEIGHT - y + yOffset - 1) * SCREEN_WIDTH + i] = (((Uint32) c3_c) + (((Uint32) c2_c) << 8) + (((Uint32) c1_c) << 16) + (((Uint32) 255) << 24));
-            }
+            }*/
             
             tooFar = false;
             Vector2d currentFloor;
-            for (int y = SCREEN_HEIGHT - yOffset; y > wallBottom - yOffset; y--) {
+            
+            int start = yOffset <= 0 ? SCREEN_HEIGHT - yOffset : SCREEN_HEIGHT + yOffset;
+            int end = yOffset <= 0 ? wallBottom - yOffset : actualWallBottom - yOffset;
+            
+            for (int y = start; y > end; y--) {
                 double currentDistance = SCREEN_HEIGHT / (2.0 * y - SCREEN_HEIGHT);
                 if (currentDistance > viewDistance) tooFar = true;
                 if (!tooFar) {
@@ -181,25 +155,13 @@ void Raycaster::raycast(Player *player, int (*worldMap)[mapHeight][mapWidth], in
                     if ((*worldMap)[(int) currentFloor.getY()][(int) currentFloor.getX()] < 1) {
                         Vector2d floorTexture = Vector2d((int) (currentFloor.getX() * 64 * 2) % 64, (int) (currentFloor.getY() * 64) % 32); // TODO change 64 to texture dimensions, 2 scalear
                         // TODO vrf % 32???
-                        Uint16 color_ceiling = redgreycheck[int(textureWidth * floorTexture.getY() + floorTexture.getX())];
-                        c1_c = (Uint8) (color_ceiling >> 8);
-                        c2_c = (Uint8) (color_ceiling >> 4) & 0x0f;
-                        c3_c = ((Uint8) (color_ceiling) << 4);
-                        c3_c = c3_c >> 4; // todo
-                        c1_c = c1_c << 4;
-                        c2_c = c2_c << 4;
-                        c3_c = c3_c << 4;
-                        
-                        c1_c -= c1_c * currentDistance / (viewDistance + 1);
-                        c2_c -= c2_c * currentDistance / (viewDistance + 1);
-                        c3_c -= c3_c * currentDistance / (viewDistance + 1);
-                        
-                        flashLight(i, y, &c1_c, &c2_c, &c3_c, true);
+                        Uint16 color_floor = greygreencheck[int(textureWidth * floorTexture.getY() + floorTexture.getX())];
+                        Uint16 color_ceiling = greycheck[int(textureWidth * floorTexture.getY() + floorTexture.getX())];
 
                         if ((y + yOffset) * SCREEN_WIDTH + i > 0 && (y + yOffset) * SCREEN_WIDTH + i < SCREEN_HEIGHT * SCREEN_WIDTH)
-                        pixels[(y + yOffset) * SCREEN_WIDTH + i] = (((Uint32) c3_c) + (((Uint32) c2_c) << 8) + (((Uint32) c1_c) << 16) + (((Uint32) 255) << 24));
-                        if ((SCREEN_HEIGHT - y + yOffset) * SCREEN_WIDTH + i > 0 && (SCREEN_HEIGHT - y + yOffset) * SCREEN_WIDTH + i < SCREEN_WIDTH * SCREEN_HEIGHT)
-                        pixels[(SCREEN_HEIGHT - y + yOffset) * SCREEN_WIDTH + i] = (((Uint32) c3_c) + (((Uint32) c2_c) << 8) + (((Uint32) c1_c) << 16) + (((Uint32) 255) << 24));
+                        pixels[(y + yOffset) * SCREEN_WIDTH + i] = argb4444_to_argb8888(color_floor, false, false, i, y, currentDistance);
+                        if ((SCREEN_HEIGHT - y + yOffset) * SCREEN_WIDTH + i > 0 && (SCREEN_HEIGHT - y) * SCREEN_WIDTH + i < SCREEN_WIDTH * SCREEN_HEIGHT)
+                        pixels[(SCREEN_HEIGHT - y + yOffset) * SCREEN_WIDTH + i] = argb4444_to_argb8888(color_ceiling, false, false, i, SCREEN_HEIGHT - y, currentDistance);
                     }
                 }
                 else pixels[(y + yOffset) * SCREEN_WIDTH + i] = 4278190080; // black
@@ -218,4 +180,29 @@ void Raycaster::raycast(Player *player, int (*worldMap)[mapHeight][mapWidth], in
         }
         zBuffer[i] = orthDistance;
     }
+}
+
+Uint32 Raycaster::argb4444_to_argb8888(Uint16 color, bool dark, bool flashlight, int x, int y, double distance) {
+    Uint8 c1 = (Uint8) (color >> 8);
+    Uint8 c2 = (Uint8) (color >> 4) & 0x0f;
+    Uint8 c3 = ((Uint8) (color) << 4);
+    c3 = c3 >> 4; // todo
+    
+    if (!dark) {
+        c1 = c1 << 4;
+        c2 = c2 << 4;
+        c3 = c3 << 4;
+    } else {
+        c1 = c1 << 3;
+        c2 = c2 << 3;
+        c3 = c3 << 3;
+    }
+    
+    c1 -= c1 * distance / (viewDistance + 1);
+    c2 -= c2 * distance / (viewDistance + 1);
+    c3 -= c3 * distance / (viewDistance + 1);
+    
+    if (flashlight) flashLight(x, y, &c1, &c2, &c3, true);
+    
+    return (((Uint32) c3) + (((Uint32) c2) << 8) + (((Uint32) c1) << 16) + (((Uint32) 255) << 24));
 }

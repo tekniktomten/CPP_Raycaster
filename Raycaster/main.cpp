@@ -717,7 +717,7 @@ void update_screen() {
 }
 
 void clear_screen() {
-    SDL_SetRenderDrawColor( renderer, 10, 20, 50, 0xFF );
+    SDL_SetRenderDrawColor( renderer, 0, 0, 0, 0xFF );
     SDL_RenderClear( renderer );
 }
 
