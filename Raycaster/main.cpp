@@ -637,7 +637,7 @@ void drawDogs(Player *player) {
     Vector2d pos = player -> pos;
     Vector2d dir = player -> dir;
     Vector2d cam = player -> cam;
-    for (auto dog = dogs.begin(); dog != dogs.end(); ++dog) {
+    for (auto dog = dogs.begin(); dog != dogs.end(); ) {
         bool destroyed = false;
         Vector2d dogPos = Vector2d(dog -> x, dog -> y);
         Vector2d newDogPos = dogPos + (pos - dogPos).norm() * 3 * frameTime;
@@ -645,8 +645,8 @@ void drawDogs(Player *player) {
             if ((int) newDogPos.getY() > 0 && (int) newDogPos.getY() < mapHeight && (int) newDogPos.getX() > 0 && (int) newDogPos.getX() < mapWidth && (*activeMap)[(int) newDogPos.getY()][(int) newDogPos.getX()] <= 0) {
                 dog -> x = newDogPos.getX();
                 dog -> y = newDogPos.getY();
+                if (dog -> activeTexture == 0) dog -> activeTexture = 1;
             }
-            if (dog -> activeTexture == 0) dog -> activeTexture = 1;
         } else if (!(dog -> shot)) dog -> activeTexture = 0;
         // relative distance
         Vector2d spriteDistance = Vector2d(dog -> x - pos.getX(), dog -> y - pos.getY());
@@ -754,6 +754,7 @@ void drawDogs(Player *player) {
             }
         }
         if (destroyed) dog = dogs.erase(dog);
+        else ++dog;
     }
 }
 
