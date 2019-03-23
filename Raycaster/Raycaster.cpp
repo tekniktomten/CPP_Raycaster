@@ -153,8 +153,7 @@ void Raycaster::raycast(Player *player, int (*worldMap)[mapHeight][mapWidth], in
                     double weight = (currentDistance * wallH) / (orthDistance);
                     currentFloor = Vector2d(weight * floorWall.getX() + (1.0 - weight) * pos.getX(), weight * floorWall.getY() + (1.0 - weight) * pos.getY());
                     if ((*worldMap)[(int) currentFloor.getY()][(int) currentFloor.getX()] < 1) {
-                        Vector2d floorTexture = Vector2d((int) (currentFloor.getX() * 64 * 2) % 64, (int) (currentFloor.getY() * 64) % 32); // TODO change 64 to texture dimensions, 2 scalear
-                        // TODO vrf % 32???
+                        Vector2d floorTexture = Vector2d((int) (currentFloor.getX() * textureWidth) % textureWidth, (int) (currentFloor.getY() * textureHeight) % textureHeight);
                         Uint16 color_floor = greygreencheck[int(textureWidth * floorTexture.getY() + floorTexture.getX())];
                         Uint16 color_ceiling = greycheck[int(textureWidth * floorTexture.getY() + floorTexture.getX())];
 

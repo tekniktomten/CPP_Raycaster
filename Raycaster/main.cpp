@@ -283,6 +283,7 @@ struct Dog {
     int activeTexture = 0;
     long textureSwapTime = 0;
     long textureSwapDelta = 200;
+    bool shot = false;
 };
 
 std::vector<Dog> dogs = {};
@@ -358,6 +359,7 @@ int main( int argc, char* args[] ) {
             Dog d;
             d.x = rand() % 30 + 1;
             d.y = rand() % 90 + 1;
+            d.activeTexture = 1;
             dogs.push_back(d);
         }
         game_loop();
@@ -627,7 +629,7 @@ void drawDogs(Player *player) {
     for (int i = 0; i < dogs.size(); i++) {
         Vector2d dogPos = Vector2d(dogs[i].x, dogs[i].y);
         Vector2d newDogPos = dogPos + (pos - dogPos).norm() * 3 * frameTime;
-        if ((pos - newDogPos).mag() > 1.6) {
+        if ((pos - newDogPos).mag() > 1 && !dogs[i].shot) {
             if ((*activeMap)[(int) newDogPos.getY()][(int) newDogPos.getX()] <= 0) {
                 dogs[i].x = newDogPos.getX();
                 dogs[i].y = newDogPos.getY();
@@ -657,34 +659,72 @@ void drawDogs(Player *player) {
                     int d = y * 256 - SCREEN_HEIGHT * 128 + spriteHeight * 128;
                     int texY = ((d * 64) / spriteHeight) / 256;
                     Uint32 c;
+                    bool destroyed = false;
                     switch (dogs[i].activeTexture) {
                         case 0:
-                            c = dog_running1[texY * 64 + texX];
-                            if (SDL_GetTicks() > dogs[i].textureSwapTime + dogs[i].textureSwapDelta) {
-                                if (++dogs[i].activeTexture > 2) dogs[i].activeTexture = 0;
-                                dogs[i].textureSwapTime = SDL_GetTicks();
-                            }
+                            c = dog_still[texY * 64 + texX];
                             break;
                         case 1:
-                            c = dog_running2[texY * 64 + texX];
-                            if (SDL_GetTicks() > dogs[i].textureSwapTime + dogs[i].textureSwapDelta * 3 / 2) {
-                                if (++dogs[i].activeTexture > 2) dogs[i].activeTexture = 0;
+                            c = dog_running1[texY * 64 + texX];
+                            if (SDL_GetTicks() > dogs[i].textureSwapTime + dogs[i].textureSwapDelta) {
+                                if (++dogs[i].activeTexture > 3) dogs[i].activeTexture = 1;
                                 dogs[i].textureSwapTime = SDL_GetTicks();
                             }
                             break;
                         case 2:
-                            c = dog_running3[texY * 64 + texX];
-                            if (SDL_GetTicks() > dogs[i].textureSwapTime + dogs[i].textureSwapDelta) {
-                                if (++dogs[i].activeTexture > 2) dogs[i].activeTexture = 0;
+                            c = dog_running2[texY * 64 + texX];
+                            if (SDL_GetTicks() > dogs[i].textureSwapTime + dogs[i].textureSwapDelta * 3 / 2) {
+                                if (++dogs[i].activeTexture > 3) dogs[i].activeTexture = 1;
                                 dogs[i].textureSwapTime = SDL_GetTicks();
                             }
                             break;
+                        case 3:
+                            c = dog_running3[texY * 64 + texX];
+                            if (SDL_GetTicks() > dogs[i].textureSwapTime + dogs[i].textureSwapDelta) {
+                                if (++dogs[i].activeTexture > 3) dogs[i].activeTexture = 1;
+                                dogs[i].textureSwapTime = SDL_GetTicks();
+                            }
+                            break;
+                        case 4:
+                            dogs[i].shot = true;
+                            c = dog_shot1[texY * 64 + texX];
+                            if (SDL_GetTicks() > dogs[i].textureSwapTime + dogs[i].textureSwapDelta) { // TODO crashar om det här går för fort
+                                dogs[i].activeTexture++;
+                                dogs[i].textureSwapTime = SDL_GetTicks();
+                            }
+                            break;
+                        case 5:
+                            c = dog_shot2[texY * 64 + texX];
+                            if (SDL_GetTicks() > dogs[i].textureSwapTime + dogs[i].textureSwapDelta) {
+                                dogs[i].activeTexture++;
+                                dogs[i].textureSwapTime = SDL_GetTicks();
+                            }
+                            break;
+                        case 6:
+                            c = dog_shot3[texY * 64 + texX];
+                            if (SDL_GetTicks() > dogs[i].textureSwapTime + dogs[i].textureSwapDelta) {
+                                dogs[i].activeTexture++;
+                                dogs[i].textureSwapTime = SDL_GetTicks();
+                            }
+                            break;
+                        case 7:
+                            c = dog_dead[texY * 64 + texX];
+                            if (SDL_GetTicks() > dogs[i].textureSwapTime + dogs[i].textureSwapDelta * 2.0) {
+                                dogs[i].activeTexture++;
+                                dogs[i].textureSwapTime = SDL_GetTicks();
+                            }
+                            break;
+                        case 8:
+                            c = dog_dead[texY * 64 + texX];
+                            //dogs.erase(dogs.begin() + i); // todo radera senare eller uppdatera inc så det inte krashar
+                            destroyed = true;
+                            break;
                         default:
-                            c = dog_running1[texY * 64 + texX];
+                            c = dog_still[texY * 64 + texX];
                             dogs[i].activeTexture = 0;
                             break;
                     }
-                    if (c != 0x0908) {
+                    if (c != 0x0908 && !destroyed) {
                         Uint8 c1 = (Uint8) (c >> 8);
                         Uint8 c2 = (Uint8) (c >> 4) & 0x0f;
                         Uint8 c3 = ((Uint8) (c) << 4);
@@ -695,9 +735,8 @@ void drawDogs(Player *player) {
                         c1 -= c1 * transformed.getY() / (viewDistance + 1);
                         c2 -= c2 * transformed.getY() / (viewDistance + 1);
                         c3 -= c3 * transformed.getY() / (viewDistance + 1);
-                        flashLight(x, y, &c1, &c2, &c3, true);
                         if (y + yOffset == hitscan.getY() && x == hitscan.getX()) {
-                            dogs.erase(dogs.begin() + i);
+                            dogs[i].activeTexture = 4;
                         }
                         int index = (y + yOffset) * SCREEN_WIDTH + x;
                         if (index > 0 && index < SCREEN_WIDTH * SCREEN_HEIGHT) pixels[index] = (((Uint32) c3) + (((Uint32) c2) << 8) + (((Uint32) c1) << 16) + (((Uint32) 255) << 24)); // todo krashar här
