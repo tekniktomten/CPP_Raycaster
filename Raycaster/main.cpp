@@ -359,7 +359,6 @@ int main( int argc, char* args[] ) {
             Dog d;
             d.x = rand() % 30 + 1;
             d.y = rand() % 90 + 1;
-            d.activeTexture = 1;
             dogs.push_back(d);
         }
         game_loop();
@@ -643,11 +642,12 @@ void drawDogs(Player *player) {
         Vector2d dogPos = Vector2d(dog -> x, dog -> y);
         Vector2d newDogPos = dogPos + (pos - dogPos).norm() * 3 * frameTime;
         if ((pos - newDogPos).mag() > 1 && !(dog -> shot)) {
-            if ((*activeMap)[(int) newDogPos.getY()][(int) newDogPos.getX()] <= 0) {
+            if ((int) newDogPos.getY() > 0 && (int) newDogPos.getY() < mapHeight && (int) newDogPos.getX() > 0 && (int) newDogPos.getX() < mapWidth && (*activeMap)[(int) newDogPos.getY()][(int) newDogPos.getX()] <= 0) {
                 dog -> x = newDogPos.getX();
                 dog -> y = newDogPos.getY();
             }
-        }
+            if (dog -> activeTexture == 0) dog -> activeTexture = 1;
+        } else if (!(dog -> shot)) dog -> activeTexture = 0;
         // relative distance
         Vector2d spriteDistance = Vector2d(dog -> x - pos.getX(), dog -> y - pos.getY());
         double inverseDeterminant = 1.0 / (cam.getX() * dir.getY() - cam.getY() * dir.getX());
