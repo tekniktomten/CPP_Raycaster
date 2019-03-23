@@ -23,4 +23,5 @@ extern int viewDistance;
 extern bool createMode;
 extern int createWall;
 extern int (*activeMap)[mapHeight][mapWidth];
+void flashLight(int x, int y, Uint8 *c1, Uint8 *c2, Uint8 *c3, bool fancy);
 #endif /* global_hpp */

@@ -280,6 +280,9 @@ SDL_Rect textureRenderSize;
 struct Dog {
     double x;
     double y;
+    int activeTexture = 0;
+    long textureSwapTime = 0;
+    long textureSwapDelta = 200;
 };
 
 std::vector<Dog> dogs = {};
@@ -529,9 +532,11 @@ void game_loop() {
                     case SDL_BUTTON_LEFT:
                         break;
                     case SDL_BUTTON_RIGHT:
-                        player.dir = player.dir * 0.5;
-                        viewDistance *= 2;
-                        yOffset /= 2;
+                        if (!createMode) {
+                            player.dir = player.dir * 0.5;
+                            viewDistance *= 2;
+                            yOffset /= 2;
+                        }
                         break;
                     default:
                         break;
@@ -651,8 +656,34 @@ void drawDogs(Player *player) {
                 for (int y = drawStartY; y < drawEndY; y++) {
                     int d = y * 256 - SCREEN_HEIGHT * 128 + spriteHeight * 128;
                     int texY = ((d * 64) / spriteHeight) / 256;
-                    //sif (texY > 60) std::cout << texY << std::endl;
-                    Uint32 c = dog[texY * 64 + texX];
+                    Uint32 c;
+                    switch (dogs[i].activeTexture) {
+                        case 0:
+                            c = dog_running1[texY * 64 + texX];
+                            if (SDL_GetTicks() > dogs[i].textureSwapTime + dogs[i].textureSwapDelta) {
+                                if (++dogs[i].activeTexture > 2) dogs[i].activeTexture = 0;
+                                dogs[i].textureSwapTime = SDL_GetTicks();
+                            }
+                            break;
+                        case 1:
+                            c = dog_running2[texY * 64 + texX];
+                            if (SDL_GetTicks() > dogs[i].textureSwapTime + dogs[i].textureSwapDelta * 3 / 2) {
+                                if (++dogs[i].activeTexture > 2) dogs[i].activeTexture = 0;
+                                dogs[i].textureSwapTime = SDL_GetTicks();
+                            }
+                            break;
+                        case 2:
+                            c = dog_running3[texY * 64 + texX];
+                            if (SDL_GetTicks() > dogs[i].textureSwapTime + dogs[i].textureSwapDelta) {
+                                if (++dogs[i].activeTexture > 2) dogs[i].activeTexture = 0;
+                                dogs[i].textureSwapTime = SDL_GetTicks();
+                            }
+                            break;
+                        default:
+                            c = dog_running1[texY * 64 + texX];
+                            dogs[i].activeTexture = 0;
+                            break;
+                    }
                     if (c != 0x0908) {
                         Uint8 c1 = (Uint8) (c >> 8);
                         Uint8 c2 = (Uint8) (c >> 4) & 0x0f;
@@ -664,12 +695,7 @@ void drawDogs(Player *player) {
                         c1 -= c1 * transformed.getY() / (viewDistance + 1);
                         c2 -= c2 * transformed.getY() / (viewDistance + 1);
                         c3 -= c3 * transformed.getY() / (viewDistance + 1);
-                        //int r = sqrt((float)(x - SCREEN_WIDTH / 2) * (x - SCREEN_WIDTH / 2) + (y + yOffset + spriteHeight / 2 - SCREEN_HEIGHT / 2) * (y + yOffset + spriteHeight / 2 - SCREEN_HEIGHT / 2));
-                        int r = abs((x - SCREEN_WIDTH / 2)) + abs((y + yOffset - SCREEN_HEIGHT / 2 + spriteHeight / 2));
-                        if (r < 30) r = 30;
-                        c1 = ((int) c1) * 30 / r;
-                        c2 = ((int) c2) * 30 / r;
-                        c3 = ((int) c3) * 30 / r;
+                        flashLight(x, y, &c1, &c2, &c3, true);
                         if (y + yOffset == hitscan.getY() && x == hitscan.getX()) {
                             dogs.erase(dogs.begin() + i);
                         }

@@ -10,8 +10,8 @@ void Raycaster::raycast(Player *player, int (*worldMap)[mapHeight][mapWidth], in
     dir = player -> dir;
     cam = player -> cam;
     wallH = wallHeightMultiplier;
-    int textureWidth = 128;
-    int textureHeight = 128 * wallH;
+    int textureWidth = 64;
+    int textureHeight = 64 * wallH;
     for (int i = 0; i < SCREEN_WIDTH; i++) {
         
         box = Vector2d((int) pos.getX(), (int) pos.getY());
@@ -99,7 +99,7 @@ void Raycaster::raycast(Player *player, int (*worldMap)[mapHeight][mapWidth], in
             
             Uint16 color;
             
-            for (int y = wallTop - yOffset; y < wallBottom - yOffset; y++) {
+            for (int y = wallTop - yOffset; y <= wallBottom - yOffset; y++) {
                 
                 if (!tooFar) {
                     
@@ -109,19 +109,19 @@ void Raycaster::raycast(Player *player, int (*worldMap)[mapHeight][mapWidth], in
                     //if (textureWidth * textureY + textureX > textureWidth * textureHeight || textureWidth * textureY + textureX < 0) break; // this was stupid todo
                     switch (hit) {
                         case 1: {
-                            color = ice[textureWidth * textureY + textureX];
+                            color = bluegrey[textureWidth * textureY + textureX];
                             break;
                         }
                         case 2: {
-                            color = ice2[textureWidth * textureY + textureX];
+                            color = brownbrick[textureWidth * textureY + textureX];
                             break;
                         }
                         case 3: {
-                            color = skull[textureWidth * textureY + textureX];
+                            color = multibrick[textureWidth * textureY + textureX];
                             break;
                         }
                         default: {
-                            color = wood[textureWidth * textureY + textureX];
+                            color = sandstoneskulls[textureWidth * textureY + textureX];
                             break;
                         }
                     }
@@ -145,12 +145,7 @@ void Raycaster::raycast(Player *player, int (*worldMap)[mapHeight][mapWidth], in
                     c2 -= c2 * orthDistance / (viewDistance + 1);
                     c3 -= c3 * orthDistance / (viewDistance + 1);
                     
-                    int r = sqrt((float)(i - SCREEN_WIDTH / 2) * (i - SCREEN_WIDTH / 2) + (y + yOffset - SCREEN_HEIGHT / 2) * (y + yOffset - SCREEN_HEIGHT / 2));
-                    //int r = abs((i - SCREEN_WIDTH / 2)) + abs((y + yOffset - SCREEN_HEIGHT / 2));
-                    if (r < 30) r = 30;
-                    c1 = ((int) c1) * 30 / r;
-                    c2 = ((int) c2) * 30 / r;
-                    c3 = ((int) c3) * 30 / r;
+                    flashLight(i, y, &c1, &c2, &c3, true);
                     
                     pixels[(y + yOffset) * SCREEN_WIDTH + i] = (((Uint32) c3) + (((Uint32) c2) << 8) + (((Uint32) c1) << 16) + (((Uint32) 255) << 24));
                 } else pixels[(y + yOffset) * SCREEN_WIDTH + i] = 4278190080; // black
@@ -187,10 +182,10 @@ void Raycaster::raycast(Player *player, int (*worldMap)[mapHeight][mapWidth], in
                         if ((*worldMap)[(int) currentFloor.getY()][(int) currentFloor.getX()] < 1) {
                             Vector2d floorTexture = Vector2d((int) (currentFloor.getX() * 64 * 2) % 64, (int) (currentFloor.getY() * 64) % 32); // TODO change 64 to texture dimensions, 2 scalear
                             // TODO vrf % 32???
-                            Uint16 color_ceiling = tileFloor[int(textureWidth * floorTexture.getY() + floorTexture.getX())];
-                            Uint8 c1_c = (Uint8) (color_ceiling >> 8);
-                            Uint8 c2_c = (Uint8) (color_ceiling >> 4) & 0x0f;
-                            Uint8 c3_c = ((Uint8) (color_ceiling) << 4);
+                            Uint16 color_ceiling = redgreycheck[int(textureWidth * floorTexture.getY() + floorTexture.getX())];
+                            c1_c = (Uint8) (color_ceiling >> 8);
+                            c2_c = (Uint8) (color_ceiling >> 4) & 0x0f;
+                            c3_c = ((Uint8) (color_ceiling) << 4);
                             c3_c = c3_c >> 4; // todo
                             c1_c = c1_c << 4;
                             c2_c = c2_c << 4;
@@ -200,15 +195,14 @@ void Raycaster::raycast(Player *player, int (*worldMap)[mapHeight][mapWidth], in
                             c2_c -= c2_c * currentDistance / (viewDistance + 1);
                             c3_c -= c3_c * currentDistance / (viewDistance + 1);
                             
-                            //int r = sqrt((float)(i - SCREEN_WIDTH / 2) * (i - SCREEN_WIDTH / 2) + (y + yOffset - SCREEN_HEIGHT / 2) * (y + yOffset - SCREEN_HEIGHT / 2));
-                            int r = abs((i - SCREEN_WIDTH / 2)) + abs((y + yOffset - SCREEN_HEIGHT / 2));
-                            if (r < 30) r = 30;
-                            c1_c = ((int) c1_c) * 30 / r;
-                            c2_c = ((int) c2_c) * 30 / r;
-                            c3_c = ((int) c3_c) * 30 / r;
+                            flashLight(i, y, &c1_c, &c2_c, &c3_c, true);
+
                             pixels[(y + yOffset) * SCREEN_WIDTH + i] = (((Uint32) c3_c) + (((Uint32) c2_c) << 8) + (((Uint32) c1_c) << 16) + (((Uint32) 255) << 24));
-                        } else pixels[(y + yOffset) * SCREEN_WIDTH + i] = 4278190080; // black
+                            if ((SCREEN_HEIGHT - y + yOffset) * SCREEN_WIDTH + i > 0 && (SCREEN_HEIGHT - y + yOffset) * SCREEN_WIDTH + i < SCREEN_WIDTH * SCREEN_HEIGHT)
+                            pixels[(SCREEN_HEIGHT - y + yOffset) * SCREEN_WIDTH + i] = (((Uint32) c3_c) + (((Uint32) c2_c) << 8) + (((Uint32) c1_c) << 16) + (((Uint32) 255) << 24));
+                        }
                     }
+                    else pixels[(y + yOffset) * SCREEN_WIDTH + i] = 4278190080; // black
                     if (createMode && createWall > 0 && i == SCREEN_WIDTH / 2 && y + yOffset == SCREEN_HEIGHT / 2) {
                         (*worldMap)[(int) currentFloor.getY()][(int) currentFloor.getX()] = createWall;
                         createWall = 0;
