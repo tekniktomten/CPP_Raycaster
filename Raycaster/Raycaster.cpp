@@ -173,40 +173,39 @@ void Raycaster::raycast(Player *player, int (*worldMap)[mapHeight][mapWidth], in
             tooFar = false;
             Vector2d currentFloor;
             for (int y = SCREEN_HEIGHT - yOffset; y > wallBottom - yOffset; y--) {
-                if ((y + yOffset) * SCREEN_WIDTH + i > 0 && (y + yOffset) * SCREEN_WIDTH + i < SCREEN_HEIGHT * SCREEN_WIDTH) { // todo prevents crashes
-                    double currentDistance = SCREEN_HEIGHT / (2.0 * y - SCREEN_HEIGHT);
-                    if (currentDistance > viewDistance) tooFar = true;
-                    if (!tooFar) {
-                        double weight = (currentDistance * wallH) / (orthDistance);
-                        currentFloor = Vector2d(weight * floorWall.getX() + (1.0 - weight) * pos.getX(), weight * floorWall.getY() + (1.0 - weight) * pos.getY());
-                        if ((*worldMap)[(int) currentFloor.getY()][(int) currentFloor.getX()] < 1) {
-                            Vector2d floorTexture = Vector2d((int) (currentFloor.getX() * 64 * 2) % 64, (int) (currentFloor.getY() * 64) % 32); // TODO change 64 to texture dimensions, 2 scalear
-                            // TODO vrf % 32???
-                            Uint16 color_ceiling = redgreycheck[int(textureWidth * floorTexture.getY() + floorTexture.getX())];
-                            c1_c = (Uint8) (color_ceiling >> 8);
-                            c2_c = (Uint8) (color_ceiling >> 4) & 0x0f;
-                            c3_c = ((Uint8) (color_ceiling) << 4);
-                            c3_c = c3_c >> 4; // todo
-                            c1_c = c1_c << 4;
-                            c2_c = c2_c << 4;
-                            c3_c = c3_c << 4;
-                            
-                            c1_c -= c1_c * currentDistance / (viewDistance + 1);
-                            c2_c -= c2_c * currentDistance / (viewDistance + 1);
-                            c3_c -= c3_c * currentDistance / (viewDistance + 1);
-                            
-                            flashLight(i, y, &c1_c, &c2_c, &c3_c, true);
+                double currentDistance = SCREEN_HEIGHT / (2.0 * y - SCREEN_HEIGHT);
+                if (currentDistance > viewDistance) tooFar = true;
+                if (!tooFar) {
+                    double weight = (currentDistance * wallH) / (orthDistance);
+                    currentFloor = Vector2d(weight * floorWall.getX() + (1.0 - weight) * pos.getX(), weight * floorWall.getY() + (1.0 - weight) * pos.getY());
+                    if ((*worldMap)[(int) currentFloor.getY()][(int) currentFloor.getX()] < 1) {
+                        Vector2d floorTexture = Vector2d((int) (currentFloor.getX() * 64 * 2) % 64, (int) (currentFloor.getY() * 64) % 32); // TODO change 64 to texture dimensions, 2 scalear
+                        // TODO vrf % 32???
+                        Uint16 color_ceiling = redgreycheck[int(textureWidth * floorTexture.getY() + floorTexture.getX())];
+                        c1_c = (Uint8) (color_ceiling >> 8);
+                        c2_c = (Uint8) (color_ceiling >> 4) & 0x0f;
+                        c3_c = ((Uint8) (color_ceiling) << 4);
+                        c3_c = c3_c >> 4; // todo
+                        c1_c = c1_c << 4;
+                        c2_c = c2_c << 4;
+                        c3_c = c3_c << 4;
+                        
+                        c1_c -= c1_c * currentDistance / (viewDistance + 1);
+                        c2_c -= c2_c * currentDistance / (viewDistance + 1);
+                        c3_c -= c3_c * currentDistance / (viewDistance + 1);
+                        
+                        flashLight(i, y, &c1_c, &c2_c, &c3_c, true);
 
-                            pixels[(y + yOffset) * SCREEN_WIDTH + i] = (((Uint32) c3_c) + (((Uint32) c2_c) << 8) + (((Uint32) c1_c) << 16) + (((Uint32) 255) << 24));
-                            if ((SCREEN_HEIGHT - y + yOffset) * SCREEN_WIDTH + i > 0 && (SCREEN_HEIGHT - y + yOffset) * SCREEN_WIDTH + i < SCREEN_WIDTH * SCREEN_HEIGHT)
-                            pixels[(SCREEN_HEIGHT - y + yOffset) * SCREEN_WIDTH + i] = (((Uint32) c3_c) + (((Uint32) c2_c) << 8) + (((Uint32) c1_c) << 16) + (((Uint32) 255) << 24));
-                        }
+                        if ((y + yOffset) * SCREEN_WIDTH + i > 0 && (y + yOffset) * SCREEN_WIDTH + i < SCREEN_HEIGHT * SCREEN_WIDTH)
+                        pixels[(y + yOffset) * SCREEN_WIDTH + i] = (((Uint32) c3_c) + (((Uint32) c2_c) << 8) + (((Uint32) c1_c) << 16) + (((Uint32) 255) << 24));
+                        if ((SCREEN_HEIGHT - y + yOffset) * SCREEN_WIDTH + i > 0 && (SCREEN_HEIGHT - y + yOffset) * SCREEN_WIDTH + i < SCREEN_WIDTH * SCREEN_HEIGHT)
+                        pixels[(SCREEN_HEIGHT - y + yOffset) * SCREEN_WIDTH + i] = (((Uint32) c3_c) + (((Uint32) c2_c) << 8) + (((Uint32) c1_c) << 16) + (((Uint32) 255) << 24));
                     }
-                    else pixels[(y + yOffset) * SCREEN_WIDTH + i] = 4278190080; // black
-                    if (createMode && createWall > 0 && i == SCREEN_WIDTH / 2 && y + yOffset == SCREEN_HEIGHT / 2) {
-                        (*worldMap)[(int) currentFloor.getY()][(int) currentFloor.getX()] = createWall;
-                        createWall = 0;
-                    }
+                }
+                else pixels[(y + yOffset) * SCREEN_WIDTH + i] = 4278190080; // black
+                if (createMode && createWall > 0 && i == SCREEN_WIDTH / 2 && y + yOffset == SCREEN_HEIGHT / 2) {
+                    (*worldMap)[(int) currentFloor.getY()][(int) currentFloor.getX()] = createWall;
+                    createWall = 0;
                 }
             }
             
