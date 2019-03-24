@@ -647,7 +647,7 @@ void drawDogs(Player *player) {
                 dog -> y = newDogPos.getY();
                 if (dog -> activeTexture == 0) dog -> activeTexture = 1;
             }
-        } else if (!(dog -> shot)) dog -> activeTexture = 0;
+        } else if (!(dog -> shot) && dog -> activeTexture < 9) dog -> activeTexture = 9;
         // relative distance
         Vector2d spriteDistance = Vector2d(dog -> x - pos.getX(), dog -> y - pos.getY());
         double inverseDeterminant = 1.0 / (cam.getX() * dir.getY() - cam.getY() * dir.getX());
@@ -720,13 +720,41 @@ void drawDogs(Player *player) {
                             break;
                         case 7:
                             c = dog_dead[texY * 64 + texX];
-                            if (SDL_GetTicks() > dog -> textureSwapTime + dog -> textureSwapDelta * 10) {
+                            if (SDL_GetTicks() > dog -> textureSwapTime + dog -> textureSwapDelta * 5) {
                                 dog -> activeTexture++;
                             }
                             break;
                         case 8:
                             c = dog_dead[texY * 64 + texX];
                             destroyed = true;
+                            break;
+                        case 9:
+                            c = dog_bite1[texY * 64 + texX];
+                            if (SDL_GetTicks() > dog -> textureSwapTime + dog -> textureSwapDelta) {
+                                dog -> activeTexture++;
+                                dog -> textureSwapTime = SDL_GetTicks();
+                            }
+                            break;
+                        case 10:
+                            c = dog_bite2[texY * 64 + texX];
+                            if (SDL_GetTicks() > dog -> textureSwapTime + dog -> textureSwapDelta) {
+                                dog -> activeTexture++;
+                                dog -> textureSwapTime = SDL_GetTicks();
+                            }
+                            break;
+                        case 11:
+                            c = dog_bite3[texY * 64 + texX];
+                            if (SDL_GetTicks() > dog -> textureSwapTime + dog -> textureSwapDelta) {
+                                dog -> activeTexture++;
+                                dog -> textureSwapTime = SDL_GetTicks();
+                            }
+                            break;
+                        case 12:
+                            c = dog_still[texY * 64 + texX];
+                            if (SDL_GetTicks() > dog -> textureSwapTime + dog -> textureSwapDelta * 2) {
+                                dog -> activeTexture = 0;
+                                dog -> textureSwapTime = SDL_GetTicks();
+                            }
                             break;
                         default:
                             c = dog_still[texY * 64 + texX];
@@ -856,7 +884,7 @@ void main_menu() {
                 SDL_GetMouseState( &x, &y );
                 if (x > play.x && x < play.x + play.w && y > play.y && y < play.y + play.h) {
                     activeMap = &worldMap;
-                    numberOfDogs = 32;
+                    numberOfDogs = 8;
                     menu_done = true;
                 } else if (x > create.x && x < create.x + create.w && y > create.y && y < create.y + create.h) {
                     createMode = true;
