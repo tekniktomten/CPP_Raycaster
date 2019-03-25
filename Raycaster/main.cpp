@@ -373,7 +373,6 @@ int main( int argc, char* args[] ) {
 void game_loop() {
     SDL_SetRelativeMouseMode(SDL_bool(trapMouse));
     
-    int countFPS = 0;
     fps = 0;
     
     //While application is running
@@ -553,12 +552,8 @@ void game_loop() {
         lastTime = t;
         t = SDL_GetTicks();
         frameTime = (t - lastTime) / 1000.0;
-        fps += (int) (1.0 / frameTime);
-        if (++countFPS > 30) {
-            fps /= countFPS;
-            countFPS = 0;
-            std::cout << "FPS: " << fps << std::endl;
-        }
+        fps = (int) (1.0 / frameTime);
+        std::cout << "FPS: " << fps << std::endl;
     }
 }
 
@@ -637,6 +632,7 @@ void drawDogs(Player *player) {
     Vector2d pos = player -> pos;
     Vector2d dir = player -> dir;
     Vector2d cam = player -> cam;
+    int lowQuality; // if == 2 then lowQuality, else 1
     for (auto dog = dogs.begin(); dog != dogs.end(); ) {
         bool destroyed = false;
         Vector2d dogPos = Vector2d(dog -> x, dog -> y);
@@ -650,6 +646,8 @@ void drawDogs(Player *player) {
         } else if (!(dog -> shot) && dog -> activeTexture < 9) dog -> activeTexture = 9;
         // relative distance
         Vector2d spriteDistance = Vector2d(dog -> x - pos.getX(), dog -> y - pos.getY());
+        if (spriteDistance.mag() < 1.5) lowQuality = 2;
+        else lowQuality = 1;
         double inverseDeterminant = 1.0 / (cam.getX() * dir.getY() - cam.getY() * dir.getX());
         Vector2d transformed = Vector2d(dir.getY() * spriteDistance.getX() - dir.getX() * spriteDistance.getY(), -cam.getY() * spriteDistance.getX() + cam.getX() * spriteDistance.getY());
         transformed *= inverseDeterminant;
@@ -664,10 +662,10 @@ void drawDogs(Player *player) {
         if (drawStartX < 0) drawStartX = 0;
         int drawEndX = spriteScreenX + spriteWidth / 2;
         if (drawEndX > SCREEN_WIDTH) drawEndX = SCREEN_WIDTH;
-        for (int x = drawStartX; x < drawEndX; x++) {
+        for (int x = drawStartX; x < drawEndX; x+=lowQuality) {
             int texX = int(256 * (x - (-spriteWidth / 2 + spriteScreenX)) * 64 / spriteWidth) / 256;
             if (transformed.getY() > 0 && x > 0 && x < SCREEN_WIDTH && transformed.getY() < zBuffer[x]) {
-                for (int y = drawStartY; y < drawEndY; y++) {
+                for (int y = drawStartY; y < drawEndY; y+=lowQuality) {
                     int d = y * 256 - SCREEN_HEIGHT * 128 + spriteHeight * 128;
                     int texY = ((d * 64) / spriteHeight) / 256;
                     Uint32 c;
@@ -772,11 +770,26 @@ void drawDogs(Player *player) {
                         c1 -= c1 * transformed.getY() / (viewDistance + 1);
                         c2 -= c2 * transformed.getY() / (viewDistance + 1);
                         c3 -= c3 * transformed.getY() / (viewDistance + 1);
-                        if (y + yOffset == hitscan.getY() && x == hitscan.getX()) {
+                        if (abs(y + yOffset - hitscan.getY()) < lowQuality && abs(x - hitscan.getX()) < lowQuality) {
                             dog -> activeTexture = 4;
                         }
+                        Uint32 value = (((Uint32) c3) + (((Uint32) c2) << 8) + (((Uint32) c1) << 16) + (((Uint32) 255) << 24));
                         int index = (y + yOffset) * SCREEN_WIDTH + x;
-                        if (index > 0 && index < SCREEN_WIDTH * SCREEN_HEIGHT) pixels[index] = (((Uint32) c3) + (((Uint32) c2) << 8) + (((Uint32) c1) << 16) + (((Uint32) 255) << 24)); // todo krashar här
+                        if (lowQuality == 2) {
+                            if (index >= 0 && index < SCREEN_WIDTH * SCREEN_HEIGHT - 1) {
+                                pixels[index] = value;
+                                pixels[++index] = value;
+                                index += SCREEN_WIDTH;
+                                if (index > 0 && index < SCREEN_WIDTH * SCREEN_HEIGHT) {
+                                    pixels[index] = value;
+                                    pixels[--index] = value;
+                                }
+                            }
+                        } else {
+                            if (index >= 0 && index < SCREEN_WIDTH * SCREEN_HEIGHT) {
+                                pixels[index] = value;
+                            }
+                        }
                     }
                 }
             }
@@ -884,7 +897,7 @@ void main_menu() {
                 SDL_GetMouseState( &x, &y );
                 if (x > play.x && x < play.x + play.w && y > play.y && y < play.y + play.h) {
                     activeMap = &worldMap;
-                    numberOfDogs = 8;
+                    numberOfDogs = 16;
                     menu_done = true;
                 } else if (x > create.x && x < create.x + create.w && y > create.y && y < create.y + create.h) {
                     createMode = true;
