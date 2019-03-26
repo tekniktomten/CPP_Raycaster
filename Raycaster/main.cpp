@@ -214,8 +214,8 @@ bool fullscreen = false;
 //Starts up SDL and creates window
 bool init();
 
-//Loads media
-bool loadMedia();
+//Loads music and sound effects
+bool loadMusic();
 
 //Frees media and shuts down SDL
 void close();
@@ -288,6 +288,15 @@ struct Dog {
 
 std::vector<Dog> dogs = {};
 
+//The music that will be played
+Mix_Music *gMusic = NULL;
+
+//The sound effects that will be used
+Mix_Chunk *gunSound = NULL;
+Mix_Chunk *dogGrumble = NULL;
+Mix_Chunk *dogGrowl = NULL;
+Mix_Chunk *dogSnarl = NULL;
+
 bool init() {
     
     textureRenderSize.x = 0;
@@ -298,7 +307,7 @@ bool init() {
     //Initialization flag
     bool success = true;
     //Initialize SDL
-    if( SDL_Init( SDL_INIT_VIDEO ) < 0 ) {
+    if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0 ) {
         printf( "SDL could not initialize! SDL Error: %s\n", SDL_GetError() );
         success = false;
     }
@@ -326,6 +335,11 @@ bool init() {
                 SDL_SetRenderDrawColor( renderer, 0xFF, 0xFF, 0xFF, 0xFF );
             }
         }
+         //Initialize SDL_mixer
+        if( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0 ) {
+            printf( "SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError() );
+            success = false;
+        }
     }
     
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -346,7 +360,12 @@ void close() {
     window = NULL;
     renderer = NULL;
     
+    //Free the music
+    Mix_FreeMusic( gMusic );
+    gMusic = NULL;
+    
     //Quit SDL subsystems
+    Mix_Quit();
     SDL_Quit();
 }
 
@@ -361,6 +380,10 @@ int main( int argc, char* args[] ) {
             d.y = rand() % 90 + 1;
             dogs.push_back(d);
         }
+        
+        gunSound = Mix_LoadWAV("Assets/Music/gun.wav");
+        loadMusic();
+        Mix_PlayMusic(gMusic, -1);
         game_loop();
     }
     
@@ -560,7 +583,7 @@ void game_loop() {
 void animate_gun() {
     Uint32 c;
     if (SDL_GetTicks() > shootTime + 90 && shooting) {
-        gunSprite++;
+        if (gunSprite++ == 1) Mix_PlayChannel(-1, gunSound, 0);
         shootTime = SDL_GetTicks();
     }
     if (gunSprite > 4) {
@@ -622,7 +645,8 @@ void drawDogs(Player *player) {
         while(!sorted) {
             sorted = true;
             for (int i = 0; i < dogs.size() - 1; i++) {
-                if (dogs[i].x * dogs[i].x + dogs[i].y * dogs[i].y > dogs[i + 1].x * dogs[i + 1].x + dogs[i + 1].y * dogs[i + 1].y) {
+                if ((dogs[i].x - player -> pos.getX()) * (dogs[i].x - player -> pos.getX()) + (dogs[i].y - player -> pos.getY()) * (dogs[i].y - player -> pos.getY()) <
+                    (dogs[i + 1].x - player -> pos.getX()) * (dogs[i + 1].x - player -> pos.getX()) + (dogs[i + 1].y - player -> pos.getY()) * (dogs[i + 1].y - player -> pos.getY())) {
                     std::swap(dogs[i], dogs[i + 1]);
                     sorted = false;
                 }
@@ -634,6 +658,7 @@ void drawDogs(Player *player) {
     Vector2d cam = player -> cam;
     int lowQuality; // if == 2 then lowQuality, else 1
     for (auto dog = dogs.begin(); dog != dogs.end(); ) {
+        //if (rand() % 10000 == 0) Mix_PlayChannel(-1, dogGrowl, 0); random dog sounds
         bool destroyed = false;
         Vector2d dogPos = Vector2d(dog -> x, dog -> y);
         Vector2d newDogPos = dogPos + (pos - dogPos).norm() * 3 * frameTime;
@@ -646,8 +671,10 @@ void drawDogs(Player *player) {
         } else if (!(dog -> shot) && dog -> activeTexture < 9) dog -> activeTexture = 9;
         // relative distance
         Vector2d spriteDistance = Vector2d(dog -> x - pos.getX(), dog -> y - pos.getY());
+        
         if (spriteDistance.mag() < 1.5) lowQuality = 2;
         else lowQuality = 1;
+        
         double inverseDeterminant = 1.0 / (cam.getX() * dir.getY() - cam.getY() * dir.getX());
         Vector2d transformed = Vector2d(dir.getY() * spriteDistance.getX() - dir.getX() * spriteDistance.getY(), -cam.getY() * spriteDistance.getX() + cam.getX() * spriteDistance.getY());
         transformed *= inverseDeterminant;
@@ -700,6 +727,7 @@ void drawDogs(Player *player) {
                             if (SDL_GetTicks() > dog -> textureSwapTime + dog -> textureSwapDelta / 2) {
                                 dog -> activeTexture++;
                                 dog -> textureSwapTime = SDL_GetTicks();
+                                Mix_PlayChannel(-1, dogSnarl, 0);
                             }
                             break;
                         case 5:
@@ -731,6 +759,7 @@ void drawDogs(Player *player) {
                             if (SDL_GetTicks() > dog -> textureSwapTime + dog -> textureSwapDelta) {
                                 dog -> activeTexture++;
                                 dog -> textureSwapTime = SDL_GetTicks();
+                                Mix_PlayChannel(-1, dogGrumble, 0);
                             }
                             break;
                         case 10:
@@ -908,4 +937,32 @@ void main_menu() {
             }
         }
     }
+}
+
+bool loadMusic() {
+    gMusic = Mix_LoadMUS("Assets/Music/evil_temple.wav");
+    if( gMusic == NULL ) {
+        printf("Failed to load the music file! SDL_mixer Error: %s\n", Mix_GetError());
+        return false;
+    }
+    gunSound = Mix_LoadWAV("Assets/Music/gun.wav");
+    if( gunSound == NULL ) {
+        printf( "Failed to load gun sound effect! SDL_mixer Error: %s\n", Mix_GetError() );
+        return false;
+    }
+    dogGrumble = Mix_LoadWAV("Assets/Music/dog-grumble.flac");
+    if( dogGrumble == NULL ) {
+        printf( "Failed to load gun sound effect! SDL_mixer Error: %s\n", Mix_GetError() );
+        return false;
+    }
+    dogGrowl = Mix_LoadWAV("Assets/Music/dog-growl.flac");
+    if( dogGrumble == NULL ) {
+        printf( "Failed to load gun sound effect! SDL_mixer Error: %s\n", Mix_GetError() );
+        return false;
+    }dogSnarl = Mix_LoadWAV("Assets/Music/dog-snarl.flac");
+    if( dogGrumble == NULL ) {
+        printf( "Failed to load gun sound effect! SDL_mixer Error: %s\n", Mix_GetError() );
+        return false;
+    }
+    return true;
 }

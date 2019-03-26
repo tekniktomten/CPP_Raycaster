@@ -2,6 +2,7 @@
 #define global_hpp
 
 #include <SDL2/SDL.h>
+#include <SDL2_mixer/SDL_mixer.h>
 #include "Bitmaps.cpp"
 #include "Player.hpp"
 #include "Vector2d.hpp"

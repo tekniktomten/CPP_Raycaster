@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		43163B5B2240FD3E00205E89 /* Raycaster.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 43163B592240FD3E00205E89 /* Raycaster.cpp */; };
 		43163B5E224101EC00205E89 /* Player.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 43163B5C224101EC00205E89 /* Player.cpp */; };
+		4328DAD0224A340D001E0082 /* SDL2_mixer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4328DACF224A340D001E0082 /* SDL2_mixer.framework */; };
 		436CD0EF22390780003AD6C2 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 436CD0EE22390780003AD6C2 /* main.cpp */; };
 		436CD0F7223907A6003AD6C2 /* Vector2d.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 436CD0F5223907A6003AD6C2 /* Vector2d.cpp */; };
 		436CD0FC223907EA003AD6C2 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 436CD0FA223907EA003AD6C2 /* SDL2.framework */; };
@@ -33,6 +34,9 @@
 		43163B5A2240FD3E00205E89 /* Raycaster.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Raycaster.hpp; sourceTree = "<group>"; };
 		43163B5C224101EC00205E89 /* Player.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Player.cpp; sourceTree = "<group>"; };
 		43163B5D224101EC00205E89 /* Player.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Player.hpp; sourceTree = "<group>"; };
+		4328DACD224A31FD001E0082 /* SDL_mixer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL_mixer.framework; path = ../../../../Library/Frameworks/SDL_mixer.framework; sourceTree = "<group>"; };
+		4328DACF224A340D001E0082 /* SDL2_mixer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_mixer.framework; path = ../../../../Library/Frameworks/SDL2_mixer.framework; sourceTree = "<group>"; };
+		4328DAD1224A371D001E0082 /* Assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Assets; sourceTree = "<group>"; };
 		436CD0EB22390780003AD6C2 /* Raycaster */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Raycaster; sourceTree = BUILT_PRODUCTS_DIR; };
 		436CD0EE22390780003AD6C2 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		436CD0F5223907A6003AD6C2 /* Vector2d.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Vector2d.cpp; sourceTree = "<group>"; };
@@ -50,6 +54,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				436CD0FC223907EA003AD6C2 /* SDL2.framework in Frameworks */,
+				4328DAD0224A340D001E0082 /* SDL2_mixer.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -76,6 +81,7 @@
 		436CD0ED22390780003AD6C2 /* Raycaster */ = {
 			isa = PBXGroup;
 			children = (
+				4328DAD1224A371D001E0082 /* Assets */,
 				436CD0EE22390780003AD6C2 /* main.cpp */,
 				436CD0F5223907A6003AD6C2 /* Vector2d.cpp */,
 				436CD0F6223907A6003AD6C2 /* Vector2d.hpp */,
@@ -93,6 +99,8 @@
 		436CD0F8223907EA003AD6C2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				4328DACF224A340D001E0082 /* SDL2_mixer.framework */,
+				4328DACD224A31FD001E0082 /* SDL_mixer.framework */,
 				436CD0F9223907EA003AD6C2 /* SDL2_image.framework */,
 				436CD0FA223907EA003AD6C2 /* SDL2.framework */,
 			);
